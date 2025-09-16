@@ -20,7 +20,7 @@ import {
   ValidationError,
   FormatOptions,
   Country,
-  PhoneErrorType,
+  PhoneCustomValidator,
 } from '../models/phone-number.model';
 import { CountryService } from './country.service';
 
@@ -87,9 +87,14 @@ export class PhoneValidationService {
   validate(
     phoneNumber: string,
     countryCode?: string,
-    customMessages?: Partial<Record<ValidationError['type'], string>>
+    customMessages?: Partial<Record<ValidationError['type'], string>>,
+    customValidators?: PhoneCustomValidator[] // ✅ new param
   ): ValidationResult {
-    if (!phoneNumber || phoneNumber.trim() === '') {
+    if (
+      !phoneNumber ||
+      (typeof phoneNumber === 'string' && phoneNumber.trim() === '') ||
+      typeof phoneNumber !== 'string'
+    ) {
       return {
         isValid: false,
         error: {
@@ -114,35 +119,16 @@ export class PhoneValidationService {
           : validatePhoneNumberLength(phoneNumber);
 
         let errorType: ValidationError['type'] = 'INVALID';
-        let errorMessage: string;
 
         switch (lengthValidation) {
           case 'TOO_SHORT':
-            errorType = 'TOO_SHORT';
-            errorMessage = this.getErrorMessage('TOO_SHORT', customMessages);
-            break;
-
           case 'TOO_LONG':
-            errorType = 'TOO_LONG';
-            errorMessage = this.getErrorMessage('TOO_LONG', customMessages);
-            break;
-
           case 'INVALID_COUNTRY':
-            errorType = 'INVALID_COUNTRY';
-            errorMessage = this.getErrorMessage(
-              'INVALID_COUNTRY',
-              customMessages
-            );
-            break;
-
           case 'NOT_A_NUMBER':
-            errorType = 'NOT_A_NUMBER';
-            errorMessage = this.getErrorMessage('NOT_A_NUMBER', customMessages);
+            errorType = lengthValidation;
             break;
-
           default:
             errorType = 'INVALID';
-            errorMessage = this.getErrorMessage('INVALID', customMessages);
             break;
         }
 
@@ -154,6 +140,28 @@ export class PhoneValidationService {
             message: this.getErrorMessage(errorType, customMessages),
           },
         };
+      }
+
+      // ✅ Custom validators go here
+      if (customValidators && customValidators.length > 0) {
+        for (const validator of customValidators) {
+          const country = this.countryService.getCountryByIso2(
+            countryCode ?? ''
+          );
+          const error = validator(phoneNumber, country);
+          if (error) {
+            return {
+              isValid: false,
+              isPossible: true,
+              error: {
+                type: error.type,
+                message:
+                  error.message ??
+                  this.getErrorMessage(error.type, customMessages),
+              },
+            };
+          }
+        }
       }
 
       const parsed = countryCode

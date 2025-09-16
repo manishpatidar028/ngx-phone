@@ -8,6 +8,7 @@
       <ngx-phone
         formControlName="phoneReactive"
         [formControls]="phoneReactiveControl"
+        [customValidators]="[noStartWithZeroValidator]"
         [config]="{
           defaultCountry: 'US',
           autoFormat: false,

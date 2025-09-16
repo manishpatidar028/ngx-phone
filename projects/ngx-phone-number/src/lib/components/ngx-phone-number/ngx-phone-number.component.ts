@@ -26,11 +26,10 @@ import {
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
-import { AsYouType } from 'libphonenumber-js';
 
 import {
   Country,
-  PhoneErrorType,
+  PhoneCustomValidator,
   PhoneInputConfig,
   PhoneNumberValue,
   ValidationResult,
@@ -76,6 +75,7 @@ export class NgxPhoneComponent
   @Input() disabled = false;
   @Input() required = false;
   @Input() readonly = false;
+  @Input() customValidators: PhoneCustomValidator[] = [];
 
   // -------------------------------------------------------------------
   // 📤 Outputs
@@ -452,7 +452,8 @@ export class NgxPhoneComponent
     this.validationResult = this.validationService.validate(
       this.phoneValue,
       this.selectedCountry?.iso2,
-      this.normalizedConfig.errorMessages
+      this.normalizedConfig.errorMessages,
+      this.customValidators
     );
 
     this.isValid = this.validationResult.isValid;
@@ -476,6 +477,24 @@ export class NgxPhoneComponent
         this.phoneInputRef.nativeElement.value = formatted;
       }
     }
+
+    if (this.customValidators.length > 0) {
+      for (const validator of this.customValidators) {
+        const error = validator(
+          this.phoneValue,
+          this.selectedCountry ?? undefined
+        );
+        if (error) {
+          this.validationResult = {
+            isValid: false,
+            isPossible: this.validationResult.isPossible,
+            error,
+          };
+          break;
+        }
+      }
+    }
+
     this.validationChange.emit(this.validationResult);
     this.onValidatorChange?.();
   }

@@ -6,9 +6,16 @@ import {
   FormGroup,
   Validators,
   ReactiveFormsModule,
-  FormsModule
+  FormsModule,
+  ValidationErrors,
+  ValidatorFn,
+  AbstractControl,
 } from '@angular/forms';
-import { NgxPhoneModule } from 'ngx-phone-number';
+import {
+  NgxPhoneModule,
+  PhoneCustomValidator,
+  PhoneValidationService,
+} from 'ngx-phone-number'; // ✅ import the service
 
 @Component({
   selector: 'demo-app',
@@ -21,13 +28,66 @@ export class DemoAppComponent {
   reactiveForm: FormGroup;
   templateFormValue: any = '';
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private phoneValidator: PhoneValidationService // ✅ inject service
+  ) {
     this.reactiveForm = this.fb.group({
-      phoneReactive: new FormControl('', Validators.required),
+      phoneReactive: new FormControl('', [
+        Validators.required,
+        this.phoneNumberValidator(), // ✅ custom validator
+      ]),
     });
   }
 
-  // Getters for reactive form fields
+  noStartWithZeroValidator: PhoneCustomValidator = (value) => {
+    const digits = value.replace(/\D/g, '');
+    if (digits.startsWith('0')) {
+      return {
+        type: 'STARTS_WITH_ZERO',
+        message: 'Phone number cannot start with 0',
+      };
+    }
+    return null;
+  };
+
+  /** ✅ Custom validator with extra check: number must not start with 9 */
+  phoneNumberValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value;
+
+      if (!value) return null; // Let `Validators.required` handle empty
+
+      // Validate using the package's service (inject it in constructor)
+      const result = this.phoneValidator.validate(value);
+
+      if (!result?.isValid) {
+        return {
+          phoneNumber: result?.error ?? {
+            type: 'INVALID',
+            message: 'Phone number is invalid',
+          },
+        };
+      }
+
+      // Remove non-digit characters
+      const digits = value.replace(/\D/g, '');
+
+      // ❌ Custom logic: should not start with '9'
+      if (digits.startsWith('9')) {
+        return {
+          phoneNumber: {
+            type: 'STARTS_WITH_9',
+            message: 'Phone number should not start with 9',
+          },
+        };
+      }
+
+      return null; // ✅ valid
+    };
+  }
+
+  // Getters
   get phoneReactiveControl(): FormControl {
     return this.reactiveForm.get('phoneReactive') as FormControl;
   }
@@ -57,7 +117,6 @@ export class DemoAppComponent {
     console.log(`[${field}] Enter pressed`);
   }
 
-  // Submit handlers
   submitReactiveForm() {
     if (this.reactiveForm.valid) {
       alert('✅ Reactive form submitted successfully!');

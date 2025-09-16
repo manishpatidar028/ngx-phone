@@ -26,6 +26,14 @@ export interface Country {
   image?: string;
 }
 
+export type BuiltInErrorType =
+  | 'REQUIRED'
+  | 'INVALID_COUNTRY'
+  | 'TOO_SHORT'
+  | 'TOO_LONG'
+  | 'INVALID'
+  | 'NOT_A_NUMBER';
+
 /**
  * Phone input configuration
  */
@@ -122,7 +130,7 @@ export interface ValidationResult {
  * Validation errors
  */
 export interface ValidationError {
-  type: 'REQUIRED' | 'INVALID_COUNTRY' | 'TOO_SHORT' | 'TOO_LONG' | 'INVALID' | 'NOT_A_NUMBER';
+  type: BuiltInErrorType | string;
   message: string;
 }
 
@@ -163,3 +171,8 @@ export interface FormatOptions {
   removeDialCode?: boolean;
   addSpaceAfterDialCode?: boolean;
 }
+
+export type PhoneCustomValidator = (
+  value: string,
+  country?: Country
+) => ValidationError | null;

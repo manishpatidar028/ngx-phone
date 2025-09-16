@@ -1,0 +1,61 @@
+<div class="demo-container">
+  <h1>📱 NGX Phone Number - Demo</h1>
+
+  <!-- ✅ Reactive Form -->
+  <section class="form-section">
+    <h2>Reactive Form</h2>
+    <form [formGroup]="reactiveForm">
+      <lib-ngx-phone-number
+        formControlName="phoneReactive"
+        [formControls]="phoneReactiveControl"
+        [defaultCountry]="'US'"
+        [showCountryCodeInInput]="true"
+        [config]="{ autoFormat: true }"
+        (countryChange)="onCountryChange($event, 'reactive')"
+        (numberChange)="onNumberChange($event, 'reactive')"
+        (validationChange)="onValidationChange($event, 'reactive')"
+        (focus)="onFocus('reactive')"
+        (blur)="onBlur('reactive')"
+        (enter)="onEnter('reactive')"
+      ></lib-ngx-phone-number>
+
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+  </section>
+
+  <hr />
+
+  <!-- ✅ Template-Driven Form -->
+  <section class="form-section">
+    <h2>Template-Driven Form</h2>
+    <form #templateForm="ngForm" (ngSubmit)="submitTemplateForm(templateForm)">
+      <lib-ngx-phone-number
+        name="phoneTemplate"
+        [(ngModel)]="templateFormValue"
+        [defaultCountry]="'IN'"
+        [showCountryCodeInInput]="true"
+        [config]="{ autoFormat: true }"
+        (countryChange)="onCountryChange($event, 'template')"
+        (numberChange)="onNumberChange($event, 'template')"
+        (validationChange)="onValidationChange($event, 'template')"
+        (focus)="onFocus('template')"
+        (blur)="onBlur('template')"
+        (enter)="onEnter('template')"
+                [required]=true
+
+      ></lib-ngx-phone-number>
+
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+
+  </section>
+
+  <hr />
+
+  <!-- 🔄 Reset -->
+  <button class="btn btn-secondary" (click)="resetForms()">Reset Both Forms</button>
+
+  <!-- 📤 Output -->
+</div>

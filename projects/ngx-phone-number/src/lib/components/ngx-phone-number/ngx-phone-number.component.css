@@ -1,0 +1,268 @@
+/* ---------------------------------------
+  📦 CONTAINER & INPUT BASE STYLES
+------------------------------------------ */
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  background-color: #fff;
+  position: relative;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-container:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.input-container.has-error {
+  border-color: #ef4444;
+}
+
+.input-container.has-error:focus-within {
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+/* Phone number input field */
+.phone-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  font-size: 15px;
+  border-radius: 6px;
+  color: #111827;
+  outline: none;
+}
+
+/* ---------------------------------------
+  🇨🇭 FLAG + DROPDOWN TOGGLE INSIDE INPUT
+------------------------------------------ */
+.flag-trigger {
+  display: flex;
+  align-items: center;
+  padding: 0px 0px 0px 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  height: 100%;
+}
+
+.country-flag {
+  font-size: 18px;
+  margin-right: 4px;
+}
+
+.arrow-icon {
+  width: 10px;
+  height: 6px;
+  stroke: #444;
+}
+
+/* ---------------------------------------
+  🌍 SEPARATE COUNTRY SELECTOR BUTTON
+------------------------------------------ */
+.country-selector-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  height: 39px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  background: #fff;
+  color: #111827;
+  cursor: pointer;
+}
+
+/* ---------------------------------------
+  📥 COUNTRY DROPDOWN BASE STYLES
+------------------------------------------ */
+.country-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+
+  opacity: 0;
+  transform: translateY(-5px);
+  visibility: hidden;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  will-change: transform, opacity;
+}
+
+/* Visible when positioned */
+.country-dropdown.dropdown--bottom {
+  top: 100%;
+  margin-top: 4px;
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+.country-dropdown.dropdown--top {
+  bottom: 100%;
+  margin-bottom: 4px;
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+.country-dropdown {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.country-dropdown.dropdown--top,
+.country-dropdown.dropdown--bottom {
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------------------------------------
+  🔍 SEARCH INPUT INSIDE DROPDOWN
+------------------------------------------ */
+.search-container {
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* ---------------------------------------
+  🌐 COUNTRY LIST INSIDE DROPDOWN
+------------------------------------------ */
+.country-list {
+  height: calc(300px - 60px); /* Account for search box */
+  overflow: auto;
+}
+
+.country-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  font-size: 14px;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.country-item:hover,
+.country-item.selected {
+  background-color: #f3f4f6;
+}
+
+.country-item.selected {
+  font-weight: bold;
+  color: #2563eb;
+}
+
+.section-label {
+  padding: 6px 16px;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.list-divider {
+  margin: 4px 0;
+  height: 1px;
+  background: #e5e7eb;
+  border: none;
+}
+
+/* ---------------------------------------
+  ❌ NO RESULTS / OVERLAY / ERRORS
+------------------------------------------ */
+
+/* Click-away overlay when dropdown is open */
+.dropdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+  background: transparent;
+}
+
+/* Error message below input */
+.error-message {
+  margin-top: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.error-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  fill: currentColor;
+}
+
+/* ---------------------------------------
+  🌙 DARK MODE OVERRIDE
+------------------------------------------ */
+@media (prefers-color-scheme: dark) {
+  .input-container,
+  .country-selector-btn,
+  .country-dropdown,
+  .search-input,
+  .phone-input {
+    color: #000000 !important;
+  }
+}
+
+/* -----------------------------
+🌐 NEW: Flex wrapper for selector + input
+------------------------------ */
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.input-group.separate .input-container {
+  flex: 1;
+}
+
+/* Dropdown arrow inside separate selector */
+.country-selector-btn .dropdown-arrow {
+  width: 10px;
+  height: 6px;
+  stroke: #444;
+}

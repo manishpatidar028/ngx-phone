@@ -5,7 +5,7 @@
   <section class="form-section">
     <h2>Reactive Form</h2>
     <form [formGroup]="reactiveForm">
-      <ngx-phone-number
+      <ngx-phone
         formControlName="phoneReactive"
         [formControls]="phoneReactiveControl"
         [defaultCountry]="'US'"
@@ -17,7 +17,7 @@
         (focus)="onFocus('reactive')"
         (blur)="onBlur('reactive')"
         (enter)="onEnter('reactive')"
-      ></ngx-phone-number>
+      ></ngx-phone>
 
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
@@ -30,7 +30,7 @@
   <section class="form-section">
     <h2>Template-Driven Form</h2>
     <form #templateForm="ngForm" (ngSubmit)="submitTemplateForm(templateForm)">
-      <ngx-phone-number
+      <ngx-phone
         name="phoneTemplate"
         [(ngModel)]="templateFormValue"
         [defaultCountry]="'IN'"
@@ -44,7 +44,7 @@
         (enter)="onEnter('template')"
                 [required]=true
 
-      ></ngx-phone-number>
+      ></ngx-phone>
 
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>

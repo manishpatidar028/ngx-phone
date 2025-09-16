@@ -1,6 +1,8 @@
 {
-  "name": "ngx-phone-number",
-  "version": "0.0.0",
+  "name": "ngx-phone",
+  "version": "1.0.0",
+  "description": "Fully featured Angular phone number input with country dropdown, formatting, validation and template/reactive form support.",
+  "author": "Manish Patidar",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -8,6 +10,14 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
+  "keywords": [
+    "angular",
+    "phone-number",
+    "intl-tel-input",
+    "ngx-phone-number",
+    "country-selector",
+    "phone input"
+  ],
   "private": true,
   "dependencies": {
     "@angular/animations": "^18.2.0",

@@ -41,6 +41,7 @@
           *ngIf="!separateCountrySelector && showFlags"
           type="button"
           class="flag-trigger"
+          [ngClass]="buttonClass"
           [disabled]="disabled || lockCountrySelection"
           (click)="!lockCountrySelection && toggleDropdown()"
           [attr.aria-label]="
@@ -69,6 +70,7 @@
           #phoneInput
           type="tel"
           class="phone-input"
+          [ngClass]="inputClass"
           [(ngModel)]="phoneValue"
           (ngModelChange)="onPhoneInput($event)"
           [placeholder]="placeholder"
@@ -88,6 +90,7 @@
       <button
         *ngIf="separateCountrySelector && countrySelectPosition === 'after'"
         class="country-selector-btn"
+        [ngClass]="buttonClass"
         type="button"
         [disabled]="disabled || lockCountrySelection"
         (click)="!lockCountrySelection && toggleDropdown()"
@@ -181,23 +184,7 @@
   </div>
 
   <!-- ❌ Validation Error -->
-  <div *ngIf="shouldShowError()" class="error-message">
-    <svg class="error-icon" viewBox="0 0 16 16">
-      <circle
-        cx="8"
-        cy="8"
-        r="7"
-        stroke="currentColor"
-        fill="none"
-        stroke-width="1.5"
-      />
-      <path
-        d="M8 5v3m0 2.5v.5"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-      />
-    </svg>
+  <div *ngIf="showErrorMessages && shouldShowError()" [ngClass]="['error-message', errorClass]">
     <span>{{ validationResult?.error?.message }}</span>
   </div>
 

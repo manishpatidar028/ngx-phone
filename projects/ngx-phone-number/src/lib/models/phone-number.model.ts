@@ -125,6 +125,14 @@ export interface ValidationError {
   message: string;
 }
 
+export type PhoneErrorType =
+  | 'REQUIRED'
+  | 'INVALID_COUNTRY'
+  | 'TOO_SHORT'
+  | 'TOO_LONG'
+  | 'INVALID'
+  | 'NOT_A_NUMBER';
+
 /**
  * Component events
  */

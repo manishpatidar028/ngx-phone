@@ -30,6 +30,7 @@ import { AsYouType } from 'libphonenumber-js';
 
 import {
   Country,
+  PhoneErrorType,
   PhoneInputConfig,
   PhoneNumberValue,
   ValidationResult,
@@ -121,6 +122,9 @@ export class NgxPhoneComponent
   @Input() buttonClass = '';
   @Input() dropdownClass = '';
   @Input() errorClass = '';
+  @Input() showErrorMessages = true;
+  @Input() showInvalidBorder = true;
+  @Input() errorMessages: Partial<Record<PhoneErrorType, string>> = {};
 
   // -------------------------------------------------------------------
   // 📤 Outputs
@@ -143,7 +147,7 @@ export class NgxPhoneComponent
     return this.isFocused;
   }
   @HostBinding('class.has-error') get hasError() {
-    return this.shouldShowError();
+    return this.shouldShowError() && this.showInvalidBorder;
   }
 
   // -------------------------------------------------------------------
@@ -434,7 +438,7 @@ export class NgxPhoneComponent
         isPossible: false,
         error: {
           type: 'REQUIRED',
-          message: 'Phone number is required.',
+          message: this.errorMessages.REQUIRED ?? 'Phone number is required.',
         },
       };
       this.isValid = false;
@@ -446,7 +450,8 @@ export class NgxPhoneComponent
 
     this.validationResult = this.validationService.validate(
       this.phoneValue,
-      this.selectedCountry?.iso2
+      this.selectedCountry?.iso2,
+      this.errorMessages
     );
 
     this.isValid = this.validationResult.isValid;
@@ -603,7 +608,7 @@ export class NgxPhoneComponent
       return {
         phoneNumber: {
           type: 'REQUIRED',
-          message: 'Phone number is required.',
+          message: this.errorMessages.REQUIRED ?? 'Phone number is required.',
         },
       };
     }

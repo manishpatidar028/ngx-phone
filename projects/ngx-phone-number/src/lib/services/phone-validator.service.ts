@@ -10,24 +10,24 @@ import {
   AsYouType,
   getCountryCallingCode,
   getExampleNumber,
-  isSupportedCountry
+  isSupportedCountry,
 } from 'libphonenumber-js/max';
 import examples from 'libphonenumber-js/examples.mobile.json';
 
-import { 
-  PhoneNumberValue, 
-  ValidationResult, 
+import {
+  PhoneNumberValue,
+  ValidationResult,
   ValidationError,
   FormatOptions,
-  Country 
+  Country,
+  PhoneErrorType,
 } from '../models/phone-number.model';
 import { CountryService } from './country.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PhoneValidationService {
-  
   constructor(private countryService: CountryService) {}
 
   /**
@@ -50,11 +50,13 @@ export class PhoneValidationService {
         return {
           raw: phoneNumber,
           isValid: false,
-          isPossible: false
+          isPossible: false,
         };
       }
 
-      const country = this.countryService.getCountryByIso2(parsed.country || '');
+      const country = this.countryService.getCountryByIso2(
+        parsed.country || ''
+      );
 
       return {
         countryCode: parsed.country as CountryCode,
@@ -68,13 +70,13 @@ export class PhoneValidationService {
         isPossible: parsed.isPossible(),
         type: parsed.getType(),
         country: country,
-        raw: phoneNumber
+        raw: phoneNumber,
       };
     } catch (error) {
       return {
         raw: phoneNumber,
         isValid: false,
-        isPossible: false
+        isPossible: false,
       };
     }
   }
@@ -84,68 +86,76 @@ export class PhoneValidationService {
    */
   validate(
     phoneNumber: string,
-    countryCode?: string
+    countryCode?: string,
+    customMessages?: Partial<Record<ValidationError['type'], string>>
   ): ValidationResult {
     if (!phoneNumber || phoneNumber.trim() === '') {
       return {
         isValid: false,
         error: {
           type: 'REQUIRED',
-          message: 'Phone number is required'
-        }
+          message: this.getErrorMessage('REQUIRED', customMessages),
+        },
       };
     }
 
     try {
-      // Check if valid
       const isValid = countryCode
         ? isValidPhoneNumber(phoneNumber, countryCode as CountryCode)
         : isValidPhoneNumber(phoneNumber);
 
-      // Check if possible
       const isPossible = countryCode
         ? isPossiblePhoneNumber(phoneNumber, countryCode as CountryCode)
         : isPossiblePhoneNumber(phoneNumber);
 
-      // Get validation details
       if (!isValid) {
         const lengthValidation = countryCode
           ? validatePhoneNumberLength(phoneNumber, countryCode as CountryCode)
           : validatePhoneNumberLength(phoneNumber);
 
         let errorType: ValidationError['type'] = 'INVALID';
-        let errorMessage = 'Invalid phone number';
+        let errorMessage: string;
 
         switch (lengthValidation) {
           case 'TOO_SHORT':
             errorType = 'TOO_SHORT';
-            errorMessage = 'Phone number is too short';
+            errorMessage = this.getErrorMessage('TOO_SHORT', customMessages);
             break;
+
           case 'TOO_LONG':
             errorType = 'TOO_LONG';
-            errorMessage = 'Phone number is too long';
+            errorMessage = this.getErrorMessage('TOO_LONG', customMessages);
             break;
+
           case 'INVALID_COUNTRY':
             errorType = 'INVALID_COUNTRY';
-            errorMessage = 'Invalid country code';
+            errorMessage = this.getErrorMessage(
+              'INVALID_COUNTRY',
+              customMessages
+            );
             break;
+
           case 'NOT_A_NUMBER':
             errorType = 'NOT_A_NUMBER';
-            errorMessage = 'Not a valid phone number';
+            errorMessage = this.getErrorMessage('NOT_A_NUMBER', customMessages);
+            break;
+
+          default:
+            errorType = 'INVALID';
+            errorMessage = this.getErrorMessage('INVALID', customMessages);
             break;
         }
 
         return {
           isValid: false,
-          isPossible: isPossible,
+          isPossible,
           error: {
             type: errorType,
-            message: errorMessage
-          }
+            message: this.getErrorMessage(errorType, customMessages),
+          },
         };
       }
 
-      // Parse to get type
       const parsed = countryCode
         ? parsePhoneNumberFromString(phoneNumber, countryCode as CountryCode)
         : parsePhoneNumberFromString(phoneNumber);
@@ -153,16 +163,16 @@ export class PhoneValidationService {
       return {
         isValid: true,
         isPossible: true,
-        type: parsed?.getType()
+        type: parsed?.getType(),
       };
-    } catch (error) {
+    } catch {
       return {
         isValid: false,
         isPossible: false,
         error: {
           type: 'INVALID',
-          message: 'Unable to validate phone number'
-        }
+          message: this.getErrorMessage('INVALID', customMessages),
+        },
       };
     }
   }
@@ -170,10 +180,7 @@ export class PhoneValidationService {
   /**
    * Format phone number as you type
    */
-  formatAsYouType(
-    phoneNumber: string,
-    countryCode?: string
-  ): string {
+  formatAsYouType(phoneNumber: string, countryCode?: string): string {
     try {
       const formatter = new AsYouType(countryCode as CountryCode);
       return formatter.input(phoneNumber);
@@ -200,7 +207,7 @@ export class PhoneValidationService {
       }
 
       const style = options?.style || 'INTERNATIONAL';
-      
+
       let formatted: string;
       switch (style) {
         case 'NATIONAL':
@@ -266,12 +273,15 @@ export class PhoneValidationService {
   /**
    * Get example number for country
    */
-  getExampleNumber(countryCode: string, type: 'MOBILE' | 'FIXED_LINE' = 'MOBILE'): string {
+  getExampleNumber(
+    countryCode: string,
+    type: 'MOBILE' | 'FIXED_LINE' = 'MOBILE'
+  ): string {
     try {
       if (!isSupportedCountry(countryCode as CountryCode)) {
         return '';
       }
-      
+
       const example = getExampleNumber(countryCode as CountryCode, examples);
       return example ? example.formatInternational() : '';
     } catch {
@@ -305,7 +315,7 @@ export class PhoneValidationService {
     } catch {
       // Try manual detection
     }
-    
+
     return this.countryService.detectCountryFromNumber(phoneNumber);
   }
 
@@ -358,11 +368,11 @@ export class PhoneValidationService {
 
       const dialCode = '+' + parsed.countryCallingCode;
       const national = parsed.nationalNumber.toString();
-      
+
       // Try to extract area code (simplified logic)
       let areaCode = '';
       let localNumber = national;
-      
+
       if (parsed.country === 'US' || parsed.country === 'CA') {
         // North American format
         if (national.length >= 10) {
@@ -374,7 +384,7 @@ export class PhoneValidationService {
       return {
         dialCode,
         areaCode,
-        localNumber
+        localNumber,
       };
     } catch {
       return { localNumber: phoneNumber };
@@ -386,5 +396,24 @@ export class PhoneValidationService {
    */
   getFormatter(countryCode?: string): AsYouType {
     return new AsYouType(countryCode as CountryCode);
+  }
+
+  /**
+   * Resolve error message based on type and custom messages
+   */
+  getErrorMessage(
+    type: ValidationError['type'],
+    customMessages?: Partial<Record<ValidationError['type'], string>>
+  ): string {
+    const defaults: Record<ValidationError['type'], string> = {
+      REQUIRED: 'Phone number is required.',
+      INVALID_COUNTRY: 'Invalid or unsupported country.',
+      TOO_SHORT: 'Phone number is too short.',
+      TOO_LONG: 'Phone number is too long.',
+      INVALID: 'Invalid phone number.',
+      NOT_A_NUMBER: 'Input is not a valid number.',
+    };
+
+    return customMessages?.[type] || defaults[type] || 'Invalid phone number';
   }
 }

@@ -78,3 +78,14 @@ h1, h2, h3, h4, h5, h6 {
 .p-2 { padding: 0.5rem; }
 .p-3 { padding: 1rem; }
 .p-4 { padding: 1.5rem; }
+
+.custom-error-style {
+  color: #1c24b9;
+  font-size: 13px;
+  font-weight: 500;
+  background: none !important;
+  padding: 6px 10px;
+  border-left: 4px solid #d5ef44;
+  border-radius: 4px;
+  margin-top: 6px;
+}

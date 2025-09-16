@@ -17,11 +17,16 @@
         (focus)="onFocus('reactive')"
         (blur)="onBlur('reactive')"
         (enter)="onEnter('reactive')"
+        [showInvalidBorder]="false"
+        [errorMessages]="{
+          INVALID: 'Check the number again!'
+        }"
+          [errorClass]="'custom-error-style'"
+
       ></ngx-phone>
 
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
-
   </section>
 
   <hr />
@@ -42,20 +47,19 @@
         (focus)="onFocus('template')"
         (blur)="onBlur('template')"
         (enter)="onEnter('template')"
-                [required]=true
-
+        [required]="true"
       ></ngx-phone>
 
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
-
-
   </section>
 
   <hr />
 
   <!-- 🔄 Reset -->
-  <button class="btn btn-secondary" (click)="resetForms()">Reset Both Forms</button>
+  <button class="btn btn-secondary" (click)="resetForms()">
+    Reset Both Forms
+  </button>
 
   <!-- 📤 Output -->
 </div>

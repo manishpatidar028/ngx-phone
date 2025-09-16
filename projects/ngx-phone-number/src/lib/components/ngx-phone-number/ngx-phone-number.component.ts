@@ -38,7 +38,7 @@ import { CountryService } from '../../services/country.service';
 import { PhoneValidationService } from '../../services/phone-validator.service';
 
 @Component({
-  selector: 'lib-ngx-phone-number',
+  selector: 'ngx-phone-number',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './ngx-phone-number.component.html',

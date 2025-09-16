@@ -8,14 +8,14 @@ import {
   ReactiveFormsModule,
   FormsModule
 } from '@angular/forms';
-import { NgxPhoneComponent } from 'ngx-phone-number';
+import { NgxPhoneModule } from 'ngx-phone-number';
 
 @Component({
   selector: 'demo-app',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, NgxPhoneComponent],
+  imports: [FormsModule, ReactiveFormsModule, NgxPhoneModule],
 })
 export class DemoAppComponent {
   reactiveForm: FormGroup;

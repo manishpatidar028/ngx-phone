@@ -1,27 +1,29 @@
-<div class="ngx-phone-number-container" [ngClass]="containerClass">
+<div class="ngx-phone-number-container" [ngClass]="normalizedConfig.containerClass">
   <div class="input-wrapper" #phoneWrapperRef>
     <!-- 📦 Input Group: Country Selector (optional) + Input -->
-    <div class="input-group" [class.separate]="separateCountrySelector">
+    <div class="input-group" [class.separate]="normalizedConfig.separateCountrySelector">
       <!-- Country Selector BEFORE Input -->
       <button
-        *ngIf="separateCountrySelector && countrySelectPosition === 'before'"
+        *ngIf="
+          normalizedConfig.separateCountrySelector && normalizedConfig.countrySelectPosition === 'before'
+        "
         class="country-selector-btn"
         type="button"
-        [disabled]="disabled || lockCountrySelection"
-        (click)="!lockCountrySelection && toggleDropdown()"
+        [disabled]="disabled || normalizedConfig.lockCountrySelection"
+        (click)="!normalizedConfig.lockCountrySelection && toggleDropdown()"
         [attr.aria-label]="
           'Select country: ' + (selectedCountry?.name || 'None')
         "
         [attr.aria-expanded]="showDropdown"
       >
-        <span class="country-flag" *ngIf="showFlags && selectedCountry">
+        <span class="country-flag" *ngIf="normalizedConfig.showFlags && selectedCountry">
           {{ getEmojiFlag(selectedCountry.iso2) }}
         </span>
-        <span class="country-code" *ngIf="showDialCode">
+        <span class="country-code" *ngIf="normalizedConfig.showDialCode">
           {{ selectedCountry?.dialCode || "+1" }}
         </span>
         <svg
-          *ngIf="!lockCountrySelection"
+          *ngIf="!normalizedConfig.lockCountrySelection"
           class="dropdown-arrow"
           viewBox="0 0 12 8"
         >
@@ -38,12 +40,12 @@
       <!-- Phone Input with Inline Flag -->
       <div class="input-container" [class.has-error]="hasError">
         <button
-          *ngIf="!separateCountrySelector && showFlags"
+          *ngIf="!normalizedConfig.separateCountrySelector && normalizedConfig.showFlags"
           type="button"
           class="flag-trigger"
-          [ngClass]="buttonClass"
-          [disabled]="disabled || lockCountrySelection"
-          (click)="!lockCountrySelection && toggleDropdown()"
+          [ngClass]="normalizedConfig.buttonClass"
+          [disabled]="disabled || normalizedConfig.lockCountrySelection"
+          (click)="!normalizedConfig.lockCountrySelection && toggleDropdown()"
           [attr.aria-label]="
             'Selected country: ' + (selectedCountry?.name || 'None')
           "
@@ -52,7 +54,7 @@
             {{ getEmojiFlag(selectedCountry.iso2) }}
           </span>
           <svg
-            *ngIf="!lockCountrySelection"
+            *ngIf="!normalizedConfig.lockCountrySelection"
             class="arrow-icon"
             viewBox="0 0 12 8"
           >
@@ -70,10 +72,10 @@
           #phoneInput
           type="tel"
           class="phone-input"
-          [ngClass]="inputClass"
+          [ngClass]="normalizedConfig.inputClass"
           [(ngModel)]="phoneValue"
           (ngModelChange)="onPhoneInput($event)"
-          [placeholder]="placeholder"
+          [placeholder]="normalizedConfig.placeholder"
           [disabled]="disabled"
           [readonly]="readonly"
           [required]="required"
@@ -88,25 +90,27 @@
 
       <!-- Country Selector AFTER Input -->
       <button
-        *ngIf="separateCountrySelector && countrySelectPosition === 'after'"
+        *ngIf="
+          normalizedConfig.separateCountrySelector && normalizedConfig.countrySelectPosition === 'after'
+        "
         class="country-selector-btn"
-        [ngClass]="buttonClass"
+        [ngClass]="normalizedConfig.buttonClass"
         type="button"
-        [disabled]="disabled || lockCountrySelection"
-        (click)="!lockCountrySelection && toggleDropdown()"
+        [disabled]="disabled || normalizedConfig.lockCountrySelection"
+        (click)="!normalizedConfig.lockCountrySelection && toggleDropdown()"
         [attr.aria-label]="
           'Select country: ' + (selectedCountry?.name || 'None')
         "
         [attr.aria-expanded]="showDropdown"
       >
-        <span class="country-flag" *ngIf="showFlags && selectedCountry">
+        <span class="country-flag" *ngIf="normalizedConfig.showFlags && selectedCountry">
           {{ getEmojiFlag(selectedCountry.iso2) }}
         </span>
-        <span class="country-code" *ngIf="showDialCode">
+        <span class="country-code" *ngIf="normalizedConfig.showDialCode">
           {{ selectedCountry?.dialCode || "+1" }}
         </span>
         <svg
-          *ngIf="!lockCountrySelection"
+          *ngIf="!normalizedConfig.lockCountrySelection"
           class="dropdown-arrow"
           viewBox="0 0 12 8"
         >
@@ -128,22 +132,22 @@
       class="country-dropdown"
       [ngClass]="[
         dropdownPosition === 'top' ? 'dropdown--top' : 'dropdown--bottom',
-        dropdownClass
+        normalizedConfig.dropdownClass
       ]"
-      [style.max-height]="dropdownMaxHeight"
-      [style.width]="dropdownWidth"
+      [style.max-height]="normalizedConfig.dropdownMaxHeight"
+      [style.width]="normalizedConfig.dropdownWidth"
       role="listbox"
       [attr.aria-label]="'Country selection'"
     >
       <!-- 🔍 Search -->
-      <div *ngIf="searchEnabled" class="search-container">
+      <div *ngIf="normalizedConfig.searchEnabled" class="search-container">
         <input
           #searchInput
           type="text"
           class="search-input"
           [(ngModel)]="searchQuery"
           (ngModelChange)="onSearchChange($event)"
-          [placeholder]="searchPlaceholder"
+          [placeholder]="normalizedConfig.searchPlaceholder"
           [attr.aria-label]="'Search countries'"
         />
       </div>
@@ -177,14 +181,17 @@
         </button>
 
         <div class="no-results" *ngIf="filteredCountries.length === 0">
-          <p>{{ noResultsText }}</p>
+          <p>{{ normalizedConfig.noResultsText }}</p>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ❌ Validation Error -->
-  <div *ngIf="showErrorMessages && shouldShowError()" [ngClass]="['error-message', errorClass]">
+  <div
+    *ngIf="normalizedConfig.showErrorMessages && shouldShowError()"
+    [ngClass]="['error-message', normalizedConfig.errorClass]"
+  >
     <span>{{ validationResult?.error?.message }}</span>
   </div>
 

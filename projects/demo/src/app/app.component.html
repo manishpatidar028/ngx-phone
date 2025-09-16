@@ -8,21 +8,19 @@
       <ngx-phone
         formControlName="phoneReactive"
         [formControls]="phoneReactiveControl"
-        [defaultCountry]="'US'"
-        [showCountryCodeInInput]="true"
-        [config]="{ autoFormat: true }"
+        [config]="{
+          defaultCountry: 'US',
+          autoFormat: false,
+          showFlags: true,
+          errorClass: 'custom-error-style',
+          errorMessages: { INVALID: 'Check the number again!' }
+        }"
         (countryChange)="onCountryChange($event, 'reactive')"
         (numberChange)="onNumberChange($event, 'reactive')"
         (validationChange)="onValidationChange($event, 'reactive')"
         (focus)="onFocus('reactive')"
         (blur)="onBlur('reactive')"
         (enter)="onEnter('reactive')"
-        [showInvalidBorder]="false"
-        [errorMessages]="{
-          INVALID: 'Check the number again!'
-        }"
-          [errorClass]="'custom-error-style'"
-
       ></ngx-phone>
 
       <button type="submit" class="btn btn-primary">Submit</button>
@@ -38,9 +36,12 @@
       <ngx-phone
         name="phoneTemplate"
         [(ngModel)]="templateFormValue"
-        [defaultCountry]="'IN'"
-        [showCountryCodeInInput]="true"
-        [config]="{ autoFormat: true }"
+        [required]="true"
+        [config]="{
+          showCountryCodeInInput: true,
+          defaultCountry: 'IN',
+          autoDetectCountry: true
+        }"
         (countryChange)="onCountryChange($event, 'template')"
         (numberChange)="onNumberChange($event, 'template')"
         (validationChange)="onValidationChange($event, 'template')"

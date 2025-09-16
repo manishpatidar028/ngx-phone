@@ -1,19 +1,34 @@
-/* ---------------------------------------
-  📦 CONTAINER & INPUT BASE STYLES
------------------------------------------- */
+/* ==========================================================
+📦 CONTAINER & INPUT BASE STYLES
+========================================================== */
 .input-wrapper {
   position: relative;
   width: 100%;
 }
 
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+/* When using separate selector + input */
+.input-group.separate .input-container {
+  flex: 1;
+}
+
 .input-container {
   display: flex;
   align-items: center;
+  flex: 1; /* 🚀 Input container takes full remaining space */
+  min-width: 0; /* Required for flex children (input) to shrink properly */
   border: 1px solid #ced4da;
   border-radius: 6px;
   background-color: #fff;
-  position: relative;
   transition: border-color 0.2s, box-shadow 0.2s;
+  position: relative;
 }
 
 .input-container:focus-within {
@@ -29,24 +44,30 @@
   box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
 }
 
-/* Phone number input field */
+/* ==========================================================
+🔢 PHONE NUMBER INPUT FIELD
+========================================================== */
 .phone-input {
-  flex: 1;
+  flex: 1; /* 📏 Input fills full space */
+  width: 100%;
+  min-width: 0; /* Required for text truncation in flexbox */
   padding: 10px 12px;
   border: none;
   font-size: 15px;
   border-radius: 6px;
   color: #111827;
   outline: none;
+  background: transparent;
 }
 
-/* ---------------------------------------
-  🇨🇭 FLAG + DROPDOWN TOGGLE INSIDE INPUT
------------------------------------------- */
+/* ==========================================================
+🇨🇭 INLINE FLAG + DROPDOWN TOGGLE (inside input)
+========================================================== */
 .flag-trigger {
+  flex-shrink: 0; /* 🚫 Don't let flag shrink */
   display: flex;
   align-items: center;
-  padding: 0px 0px 0px 10px;
+  padding: 0 10px 0 10px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -64,15 +85,16 @@
   stroke: #444;
 }
 
-/* ---------------------------------------
-  🌍 SEPARATE COUNTRY SELECTOR BUTTON
------------------------------------------- */
+/* ==========================================================
+🌍 SEPARATE COUNTRY SELECTOR BUTTON (before/after input)
+========================================================== */
 .country-selector-btn {
   display: flex;
   align-items: center;
   gap: 5px;
   padding: 5px 8px;
   height: 39px;
+  flex-shrink: 0;
   border: 1px solid #ced4da;
   border-radius: 6px;
   background: #fff;
@@ -80,9 +102,15 @@
   cursor: pointer;
 }
 
-/* ---------------------------------------
-  📥 COUNTRY DROPDOWN BASE STYLES
------------------------------------------- */
+.country-selector-btn .dropdown-arrow {
+  width: 10px;
+  height: 6px;
+  stroke: #444;
+}
+
+/* ==========================================================
+📥 COUNTRY DROPDOWN BASE STYLES
+========================================================== */
 .country-dropdown {
   position: absolute;
   left: 0;
@@ -94,7 +122,6 @@
   border-radius: 6px;
   background: #fff;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-
   opacity: 0;
   transform: translateY(-5px);
   visibility: hidden;
@@ -102,7 +129,6 @@
   will-change: transform, opacity;
 }
 
-/* Visible when positioned */
 .country-dropdown.dropdown--bottom {
   top: 100%;
   margin-top: 4px;
@@ -119,23 +145,9 @@
   visibility: visible;
 }
 
-.country-dropdown {
-  visibility: hidden;
-  opacity: 0;
-  transform: translateY(-5px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.country-dropdown.dropdown--top,
-.country-dropdown.dropdown--bottom {
-  visibility: visible;
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ---------------------------------------
-  🔍 SEARCH INPUT INSIDE DROPDOWN
------------------------------------------- */
+/* ==========================================================
+🔍 SEARCH INPUT INSIDE DROPDOWN
+========================================================== */
 .search-container {
   padding: 8px;
   border-bottom: 1px solid #e5e7eb;
@@ -155,11 +167,11 @@
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
-/* ---------------------------------------
-  🌐 COUNTRY LIST INSIDE DROPDOWN
------------------------------------------- */
+/* ==========================================================
+🌐 COUNTRY LIST INSIDE DROPDOWN
+========================================================== */
 .country-list {
-  height: calc(300px - 60px); /* Account for search box */
+  height: calc(300px - 60px); /* 🧮 Space for search box */
   overflow: auto;
 }
 
@@ -201,11 +213,16 @@
   border: none;
 }
 
-/* ---------------------------------------
-  ❌ NO RESULTS / OVERLAY / ERRORS
------------------------------------------- */
+/* ==========================================================
+❌ NO RESULTS / OVERLAY / ERROR MESSAGES
+========================================================== */
+.no-results {
+  padding: 16px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
 
-/* Click-away overlay when dropdown is open */
 .dropdown-overlay {
   position: fixed;
   inset: 0;
@@ -213,10 +230,8 @@
   background: transparent;
 }
 
-/* Error message below input */
 .error-message {
-  margin-top: 6px;
-  padding: 6px 10px;
+  padding: 5px 0px;
   font-size: 13px;
   color: #ef4444;
   border-radius: 4px;
@@ -232,9 +247,9 @@
   fill: currentColor;
 }
 
-/* ---------------------------------------
-  🌙 DARK MODE OVERRIDE
------------------------------------------- */
+/* ==========================================================
+🌙 DARK MODE SUPPORT
+========================================================== */
 @media (prefers-color-scheme: dark) {
   .input-container,
   .country-selector-btn,
@@ -243,25 +258,4 @@
   .phone-input {
     color: #000000 !important;
   }
-}
-
-/* -----------------------------
-🌐 NEW: Flex wrapper for selector + input
------------------------------- */
-.input-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-}
-
-.input-group.separate .input-container {
-  flex: 1;
-}
-
-/* Dropdown arrow inside separate selector */
-.country-selector-btn .dropdown-arrow {
-  width: 10px;
-  height: 6px;
-  stroke: #444;
 }

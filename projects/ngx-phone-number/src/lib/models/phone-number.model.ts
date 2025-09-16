@@ -30,64 +30,65 @@ export interface Country {
  * Phone input configuration
  */
 export interface PhoneInputConfig {
-  // Country selection
+  // 🌍 Country selection
   defaultCountry?: CountryCode | string;
   preferredCountries?: (CountryCode | string)[];
   onlyCountries?: (CountryCode | string)[];
   excludeCountries?: (CountryCode | string)[];
-  
-  // Display options
+  fallbackCountry?: CountryCode | string;
+
+  // 🏁 Country selector UI
+  autoDetectCountry?: boolean;
   flagPosition?: 'start' | 'end' | 'none';
   separateCountrySelector?: boolean;
   countrySelectPosition?: 'before' | 'after';
   showFlags?: boolean;
   showDialCode?: boolean;
-  showPlaceholder?: boolean;
-  showExampleNumber?: boolean;
-  
-  // Formatting options
-  format?: 'INTERNATIONAL' | 'NATIONAL' | 'E164' | 'RFC3966';
-  formatOnDisplay?: boolean;
-  formatAsYouType?: boolean;
-  nationalMode?: boolean;
-  
-  // Validation options
+  lockCountrySelection?: boolean;
+  clearInputOnCountryChange?: boolean;
+  showCountryCodeInInput?: boolean;
+
+  // 🔡 Input field
+  placeholder?: string;
+  autoFocus?: boolean;
+  dialCodeCountryPreference?: { [dialCode: string]: string };
+
+  // 🧠 Validation
   validateOnBlur?: boolean;
   validateOnChange?: boolean;
   strictValidation?: boolean;
-  
-  // UI customization
-  placeholder?: string;
-  searchPlaceholder?: string;
-  noResultsText?: string;
-  disabled?: boolean;
-  required?: boolean;
-  readonly?: boolean;
-  
-  // CSS classes
-  containerClass?: string;
+  errorMessages?: Partial<Record<PhoneErrorType, string>>;
+  showErrorMessages?: boolean;
+  showInvalidBorder?: boolean;
+  showErrorsOn?: 'touched' | 'dirty' | 'always' | 'blur' | 'focus' | 'live';
+
+  // 🎨 UI Customization
   inputClass?: string;
   buttonClass?: string;
+  containerClass?: string;
   dropdownClass?: string;
   errorClass?: string;
-  
-  // Behavior
-  autoFocus?: boolean;
+
+  // 🧮 Formatting
+  format?: 'INTERNATIONAL' | 'NATIONAL' | 'E164' | 'RFC3966';
+  formatOnDisplay?: boolean;
+  nationalMode?: boolean;
   autoFormat?: boolean;
-  autoDetectCountry?: boolean;
-  closeOnSelect?: boolean;
+
+  // 🔍 Dropdown
   searchEnabled?: boolean;
-  
-  // Advanced
-  customPlaceholder?: (country: Country) => string;
-  customFormat?: (phoneNumber: string, country: Country) => string;
-  
-  // Dropdown
+  searchPlaceholder?: string;
+  noResultsText?: string;
   dropdownContainer?: 'body' | 'parent';
   dropdownWidth?: string;
   dropdownMaxHeight?: string;
-  fallbackCountry?: string;
+  closeOnSelect?: boolean;
+
+  // 🧠 Custom logic hooks
+  customPlaceholder?: (country: Country) => string;
+  customFormat?: (phoneNumber: string, country: Country) => string;
 }
+
 
 /**
  * Phone number value object

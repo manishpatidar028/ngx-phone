@@ -46,17 +46,17 @@ import { PhoneValidationService } from '../../services/phone-validator.service';
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => NgxPhoneNumberComponent),
+      useExisting: forwardRef(() => NgxPhoneComponent),
       multi: true,
     },
     {
       provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => NgxPhoneNumberComponent),
+      useExisting: forwardRef(() => NgxPhoneComponent),
       multi: true,
     },
   ],
 })
-export class NgxPhoneNumberComponent
+export class NgxPhoneComponent
   implements OnInit, OnDestroy, OnChanges, ControlValueAccessor, Validator
 {
   // -------------------------------------------------------------------

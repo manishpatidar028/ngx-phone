@@ -22,10 +22,12 @@ import {
   ValidationErrors,
   Validator,
   FormsModule,
+  Validators,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { parsePhoneNumberFromString } from 'libphonenumber-js/max';
 
 import {
   Country,
@@ -113,6 +115,7 @@ export class NgxPhoneComponent
   isPossible = false;
   isFocused = false;
   isCountryLocked = false;
+  isManualCountrySelection = false; // Track if user manually selected country
 
   showDropdown = false;
   dropdownPosition: 'top' | 'bottom' = 'bottom';
@@ -300,44 +303,129 @@ export class NgxPhoneComponent
   // 📞 Phone Input Logic
   // -------------------------------------------------------------------
 
-  /** Process phone number input and country inference */
+  /** Process phone number input and country inference - ENHANCED */
   private processPhoneNumber(value: string): void {
     const digits = value.replace(/\D/g, '');
+    const trimmedValue = value.trim();
 
-    if (
-      (!this.selectedCountry || value.startsWith('+')) &&
-      !this.isCountryLocked
-    ) {
-      this.detectCountryFromInput(value);
+    // Reset country lock when user starts typing international format
+    if (trimmedValue.startsWith('+')) {
+      this.isCountryLocked = false;
+      this.isManualCountrySelection = false;
     }
 
-    if (!this.selectedCountry && digits.length >= 3 && !value.startsWith('+')) {
+    // Enhanced country detection logic
+    const shouldDetectCountry = this.shouldDetectCountryFromInput(
+      trimmedValue,
+      digits
+    );
+
+    if (shouldDetectCountry) {
+      this.detectCountryFromInput(trimmedValue);
+    }
+
+    // Fallback to default country only if no country detected and no international format
+    if (
+      !this.selectedCountry &&
+      digits.length >= 3 &&
+      !trimmedValue.startsWith('+')
+    ) {
       this.fallbackToDefaultCountry();
+    }
+
+    // SPECIAL CASE: Even if autoFormat is false, format international numbers
+    if (
+      !this.normalizedConfig.autoFormat &&
+      trimmedValue.startsWith('+') &&
+      this.selectedCountry
+    ) {
+      try {
+        const formatted = this.validationService.formatAsYouType(
+          trimmedValue,
+          this.selectedCountry.iso2
+        );
+        if (formatted !== this.phoneValue) {
+          this.phoneValue = formatted;
+          if (this.phoneInputRef?.nativeElement) {
+            const cursorPosition =
+              this.phoneInputRef.nativeElement.selectionStart || 0;
+            this.phoneInputRef.nativeElement.value = formatted;
+            // Try to maintain cursor position
+            setTimeout(() => {
+              const newPos = Math.min(
+                cursorPosition + (formatted.length - trimmedValue.length),
+                formatted.length
+              );
+              this.phoneInputRef.nativeElement.setSelectionRange(
+                newPos,
+                newPos
+              );
+            }, 0);
+          }
+        }
+      } catch {
+        // If formatting fails, keep original value
+      }
     }
 
     this.validateNumber();
     this.emitValue();
   }
 
-  /** Try to detect country from phone number */
+  /** Determine if we should detect country from input - NEW METHOD */
+  private shouldDetectCountryFromInput(value: string, digits: string): boolean {
+    // Always detect for international format
+    if (value.startsWith('+')) {
+      return true;
+    }
+
+    // If no country is selected yet
+    if (!this.selectedCountry) {
+      return digits.length >= 1;
+    }
+
+    // If user manually selected a country, don't auto-detect unless it's international format
+    if (this.isManualCountrySelection) {
+      return false;
+    }
+
+    // For non-manual selections, detect when there's enough input
+    return digits.length >= 1 && !this.isCountryLocked;
+  }
+
+  /** Try to detect country from phone number - ENHANCED */
   private detectCountryFromInput(value: string): void {
     let detected = this.validationService.extractCountry(value);
 
+    // Handle dial code preferences for international format
     if (
       detected &&
       this.normalizedConfig.dialCodeCountryPreference &&
       value.startsWith('+')
     ) {
+      // Extract the dial code from the detected country (remove the '+')
+      const dialCodeNumber = detected.dialCode.replace('+', '');
       const preferredIso =
-        this.normalizedConfig.dialCodeCountryPreference[detected.dialCode];
+        this.normalizedConfig.dialCodeCountryPreference[dialCodeNumber];
+
       const preferred = preferredIso
         ? this.countryService.getCountryByIso2(preferredIso)
         : null;
-      if (preferred) detected = preferred;
+
+      if (preferred) {
+        detected = preferred;
+        console.log(
+          `Dial code preference applied: ${dialCodeNumber} -> ${preferredIso}`
+        );
+      }
     }
 
+    // Only change country if we detected a different one
     if (detected && detected.iso2 !== this.selectedCountry?.iso2) {
-      this.selectCountry(detected, false, false);
+      this.selectCountry(detected, false, false, false);
+
+      // Emit country change event for auto-detected countries
+      this.countryChange.emit(detected);
     }
   }
 
@@ -352,7 +440,7 @@ export class NgxPhoneComponent
     if (fallback) this.selectCountry(fallback, false, false);
   }
 
-  /** Set selected country and reformat input */
+  /** Set selected country and reformat input - ENHANCED */
   private selectCountry(
     country: Country,
     updateInput: boolean = true,
@@ -360,16 +448,29 @@ export class NgxPhoneComponent
     isManual: boolean = false
   ): void {
     this.selectedCountry = country;
-    this.isCountryLocked = true;
-    this.countryChange.emit(country);
+    this.isManualCountrySelection = isManual;
+
+    // Only lock country if it was manually selected or if lock is configured
+    this.isCountryLocked =
+      isManual || this.normalizedConfig.lockCountrySelection;
 
     if (updateInput) {
-      if (clearInput || !this.phoneValue) {
-        // If empty or requested to clear digits — only insert dial code
-        this.phoneValue = this.validationService.formatAsYouType(
-          country.dialCode,
-          country.iso2
-        );
+      if (clearInput || !this.phoneValue || isManual) {
+        // For manual selection or empty input, update with new dial code
+        if (isManual && this.phoneValue) {
+          // Extract only the national number part from existing input
+          const nationalNumber = this.extractNationalNumber(this.phoneValue);
+          this.phoneValue = this.validationService.formatAsYouType(
+            `${country.dialCode} ${nationalNumber}`,
+            country.iso2
+          );
+        } else {
+          // Empty input - just add dial code
+          this.phoneValue = this.validationService.formatAsYouType(
+            country.dialCode,
+            country.iso2
+          );
+        }
       } else {
         // Retain digits, just update the dial code
         this.rewritePhoneInputWithNewCountryCode(country);
@@ -377,7 +478,14 @@ export class NgxPhoneComponent
 
       if (this.phoneInputRef?.nativeElement) {
         this.phoneInputRef.nativeElement.value = this.phoneValue;
-        this.phoneInputRef.nativeElement.focus();
+        if (isManual) {
+          // Focus and position cursor at end for manual selections
+          this.phoneInputRef.nativeElement.focus();
+          setTimeout(() => {
+            const input = this.phoneInputRef.nativeElement;
+            input.setSelectionRange(input.value.length, input.value.length);
+          }, 0);
+        }
       }
 
       this.onChange(this.phoneValue || null);
@@ -387,7 +495,59 @@ export class NgxPhoneComponent
     this.emitValue();
   }
 
-  /** Rewrite input with new dial code */
+  /** Extract national number from current input - IMPROVED */
+  private extractNationalNumber(phoneValue: string): string {
+    if (!phoneValue) {
+      return '';
+    }
+
+    const trimmed = phoneValue.trim();
+
+    // If it's an international number, use libphonenumber to parse it properly
+    if (trimmed.startsWith('+')) {
+      try {
+        const parsed = this.validationService.parsePhoneNumber(trimmed);
+        if (parsed && parsed.country && this.selectedCountry) {
+          // If the parsed number is from the current country, extract national number
+          const parsedFromLibPhone = parsePhoneNumberFromString(trimmed);
+          if (
+            parsedFromLibPhone &&
+            parsedFromLibPhone.country === this.selectedCountry.iso2
+          ) {
+            return parsedFromLibPhone.nationalNumber.toString();
+          }
+        }
+      } catch {
+        // Fall through to manual extraction
+      }
+    }
+
+    // Manual extraction for various formats
+    const currentDialCode = this.selectedCountry?.dialCode || '';
+    let nationalNumber = trimmed;
+
+    // Remove international prefix and current dial code
+    if (trimmed.startsWith('+' + currentDialCode.slice(1))) {
+      // International format: +1 234 567 8900
+      nationalNumber = trimmed.slice(currentDialCode.length).trim();
+    } else if (trimmed.startsWith(currentDialCode)) {
+      // Dial code format: 1 234 567 8900
+      nationalNumber = trimmed.slice(currentDialCode.length).trim();
+    } else if (trimmed.startsWith('+')) {
+      // Different country's international format
+      // Extract everything after the dial code
+      const match = trimmed.match(/^\+(\d{1,4})\s?(.*)/);
+      if (match && match[2]) {
+        nationalNumber = match[2];
+      } else {
+        // Fallback: remove first 2-5 digits which could be dial code
+        nationalNumber = trimmed.slice(2).replace(/^\d{0,3}\s?/, '');
+      }
+    }
+
+    // Clean up the national number - remove only formatting, keep all digits
+    return nationalNumber.replace(/[\s\(\)\-\.]/g, '').trim();
+  }
   private rewritePhoneInputWithNewCountryCode(newCountry: Country): void {
     const raw = this.phoneValue.trim();
 
@@ -415,12 +575,12 @@ export class NgxPhoneComponent
     );
   }
 
-  /** Validate current phone number */
+  /** Validate current phone number - ENHANCED FOR REACTIVE FORMS */
   private validateNumber(): void {
     const trimmed = this.phoneValue?.trim() ?? '';
     const isTemplateDriven = !this.formControls;
 
-    // ✅ Skip initial validation for Template-Driven Form (on untouched input)
+    // Skip initial validation for Template-Driven Form (on untouched input)
     if (
       isTemplateDriven &&
       !this.isFocused &&
@@ -428,27 +588,45 @@ export class NgxPhoneComponent
       !trimmed
     ) {
       this.validationResult = null;
+      this.isValid = true; // Don't show as invalid initially
+      this.isPossible = false;
       return;
     }
 
+    // Handle empty value
+    // Handle empty value
     if (!trimmed) {
+      // 🟢 If untouched/unmodified, skip showing required error
+      if (!this.hasUserInteracted && !this.isFocused) {
+        this.validationResult = null;
+        this.isValid = true;
+        this.isPossible = false;
+        return;
+      }
+
       this.validationResult = {
-        isValid: false,
+        isValid: this.required ? false : true,
         isPossible: false,
-        error: {
-          type: 'REQUIRED',
-          message:
-            this.normalizedConfig.errorMessages.REQUIRED ??
-            'Phone number is required.',
-        },
+        error: this.required
+          ? {
+              type: 'REQUIRED',
+              message:
+                this.normalizedConfig.errorMessages.REQUIRED ??
+                'Phone number is required.',
+            }
+          : undefined,
       };
-      this.isValid = false;
+      this.isValid = this.required ? false : true;
       this.isPossible = false;
       this.validationChange.emit(this.validationResult);
-      this.onValidatorChange?.();
+
+      if (this.formControls) {
+        this.onValidatorChange?.();
+      }
       return;
     }
 
+    // Perform validation using the validation service
     this.validationResult = this.validationService.validate(
       this.phoneValue,
       this.selectedCountry?.iso2,
@@ -458,6 +636,8 @@ export class NgxPhoneComponent
 
     this.isValid = this.validationResult.isValid;
     this.isPossible = this.validationResult.isPossible ?? false;
+
+    // Auto-format if valid and auto-format is enabled
     if (this.isValid && this.normalizedConfig.autoFormat) {
       const formatStyle = this.normalizedConfig.format;
       const countryIso =
@@ -471,13 +651,15 @@ export class NgxPhoneComponent
         countryIso
       );
 
-      this.phoneValue = formatted;
-
-      if (this.phoneInputRef?.nativeElement) {
-        this.phoneInputRef.nativeElement.value = formatted;
+      if (formatted !== this.phoneValue) {
+        this.phoneValue = formatted;
+        if (this.phoneInputRef?.nativeElement) {
+          this.phoneInputRef.nativeElement.value = formatted;
+        }
       }
     }
 
+    // Run custom validators if provided
     if (this.customValidators.length > 0) {
       for (const validator of this.customValidators) {
         const error = validator(
@@ -490,52 +672,77 @@ export class NgxPhoneComponent
             isPossible: this.validationResult.isPossible,
             error,
           };
+          this.isValid = false;
           break;
         }
       }
     }
 
     this.validationChange.emit(this.validationResult);
+
+    // Essential for reactive forms - trigger validator change
     this.onValidatorChange?.();
   }
 
-  /** Emit formatted value */
+  /** Emit formatted value - ENHANCED FOR REACTIVE FORMS */
   private emitValue(): void {
     const isEmpty = !this.phoneValue || !this.phoneValue.trim();
 
     if (isEmpty) {
       this.phoneNumberValue = null;
-      this.onChange(''); // ✅ important
+      this.onChange(''); // Emit empty string for reactive forms
       this.numberChange.emit(null);
     } else {
       this.phoneNumberValue = this.validationService.parsePhoneNumber(
         this.phoneValue,
         this.selectedCountry?.iso2
       );
-      this.onChange(this.phoneNumberValue);
+
+      // For reactive forms, emit the parsed object or formatted string based on configuration
+      const valueToEmit = this.phoneNumberValue || this.phoneValue;
+      this.onChange(valueToEmit);
       this.numberChange.emit(this.phoneNumberValue);
     }
+
+    // Trigger change detection for reactive forms
+    this.cdr.markForCheck();
   }
 
   // -------------------------------------------------------------------
   // 🔡 Input Event
   // -------------------------------------------------------------------
 
-  /** Handle user input */
+  /** Handle user input - ENHANCED FOR REACTIVE FORMS */
   onPhoneInput(value: string): void {
     this.hasUserInteracted = true;
     this.phoneValue = value;
 
+    // Emit the change immediately to keep reactive forms in sync
     this.phoneInput$.next(value);
 
-    // ✅ Emit null if value is cleared
-    if (!this.phoneValue.trim()) {
-      this.onChange('');
+    // For reactive forms, emit the value immediately to prevent desynchronization
+    if (this.formControls) {
+      // Always emit the current value to maintain sync with reactive forms
+      if (!value.trim()) {
+        this.onChange('');
+      } else {
+        // For reactive forms, we might want to emit the raw value during typing
+        this.onChange(value);
+      }
+    } else {
+      // Template-driven forms - emit null if cleared
+      if (!this.phoneValue.trim()) {
+        this.onChange('');
+      }
     }
 
-    if (!this.formControls && this.normalizedConfig.validateOnChange) {
-      this.validateNumber(); // 🧠 for template-driven, no formControls
+    // Validate immediately for reactive forms if configured
+    if (this.formControls && this.normalizedConfig.validateOnChange) {
+      this.validateNumber();
+    } else if (!this.formControls && this.normalizedConfig.validateOnChange) {
+      this.validateNumber(); // Template-driven forms
     }
+
     this.emitValue();
   }
 
@@ -547,27 +754,56 @@ export class NgxPhoneComponent
     if (!value) {
       this.phoneValue = '';
       this.selectedCountry = null;
-      this.validateNumber(); // ✅ Trigger validation on empty
+      this.isCountryLocked = false;
+      this.isManualCountrySelection = false;
+      this.validationResult = null;
+      this.isValid = true; // Reset validation state
+      this.isPossible = false;
+
+      if (this.phoneInputRef?.nativeElement) {
+        this.phoneInputRef.nativeElement.value = '';
+      }
+
+      // Set default country after clearing
+      setTimeout(() => {
+        this.setInitialCountry();
+      }, 0);
+
       return;
     }
 
     if (typeof value === 'string') {
       this.phoneValue = value;
+      // Detect and set country from the input value
       const country = this.validationService.extractCountry(value);
-      if (country) this.selectCountry(country, false);
+      if (country) {
+        this.selectCountry(country, false, false, false);
+      }
     } else if (typeof value === 'object') {
       this.phoneValue =
         value.formatted || value.international || value.raw || '';
       if (value.country) {
-        this.selectCountry(value.country, false);
+        this.selectCountry(value.country, false, false, false);
       } else if (value.countryCode) {
         const country = this.countryService.getCountryByIso2(value.countryCode);
-        if (country) this.selectCountry(country, false);
+        if (country) this.selectCountry(country, false, false, false);
       }
     }
 
-    this.processPhoneNumber(this.phoneValue);
-    this.validateNumber(); // ✅ Force validation after setting value
+    // Update DOM input if available
+    if (this.phoneInputRef?.nativeElement) {
+      this.phoneInputRef.nativeElement.value = this.phoneValue;
+    }
+
+    // Process and validate the new value
+    if (this.phoneValue) {
+      this.processPhoneNumber(this.phoneValue);
+    }
+
+    // Force validation after setting value for reactive forms
+    setTimeout(() => {
+      this.validateNumber();
+    }, 0);
   }
 
   registerOnChange(fn: any): void {
@@ -595,7 +831,7 @@ export class NgxPhoneComponent
   /** Set country by ISO2 code */
   setCountry(countryCode: string): void {
     const country = this.countryService.getCountryByIso2(countryCode);
-    if (country) this.selectCountry(country);
+    if (country) this.selectCountry(country, true, false, true); // Mark as manual selection
   }
 
   /** Get current parsed phone number value */
@@ -611,6 +847,9 @@ export class NgxPhoneComponent
     this.isValid = false;
     this.isPossible = false;
     this.hasUserInteracted = false;
+    this.isCountryLocked = false;
+    this.isManualCountrySelection = false;
+
     if (this.phoneInputRef?.nativeElement) {
       this.phoneInputRef.nativeElement.value = '';
     }
@@ -618,11 +857,23 @@ export class NgxPhoneComponent
     this.emitValue();
   }
 
-  /** Manual validation (called by Angular forms) */
+  /** Manual validation (called by Angular forms) - TYPESCRIPT SAFE */
   validate(control: AbstractControl): ValidationErrors | null {
+    const showOn = this.normalizedConfig.showErrorsOn ?? 'dirty';
+    const untouched = !control.touched && !control.dirty;
+    if (untouched && showOn !== 'always' && showOn !== 'live') {
+      return null;
+    }
+
+    // ✅ Detect required either via input OR Angular Validators.required
+    const isRequired =
+      this.required ||
+      (typeof control.hasValidator === 'function' &&
+        control.hasValidator(Validators.required));
+
     const trimmed = this.phoneValue?.trim();
 
-    if (!trimmed) {
+    if (isRequired && !trimmed) {
       return {
         phoneNumber: {
           type: 'REQUIRED',
@@ -633,13 +884,17 @@ export class NgxPhoneComponent
       };
     }
 
+    // fallback to validation service results
     if (
       this.validationResult &&
       !this.validationResult.isValid &&
       this.validationResult.error
     ) {
       return {
-        phoneNumber: this.validationResult.error,
+        phoneNumber: {
+          type: this.validationResult.error.type,
+          message: this.validationResult.error.message,
+        },
       };
     }
 
@@ -724,15 +979,17 @@ export class NgxPhoneComponent
   }
 
   /**
-   * Called when input loses focus.
+   * Called when input loses focus - ENHANCED FOR REACTIVE FORMS.
    */
   onPhoneBlur(): void {
     this.isFocused = false;
-    this.onTouched();
+    this.onTouched(); // Critical for reactive forms
     this.blur.emit();
 
     if (this.normalizedConfig.validateOnBlur) {
       this.validateNumber();
+
+      // Auto-format on blur if valid
       if (this.isValid && this.normalizedConfig.autoFormat) {
         const formatted = this.validationService.format(
           this.phoneValue,
@@ -741,8 +998,16 @@ export class NgxPhoneComponent
             this.normalizedConfig.defaultCountry ||
             'US'
         );
-        this.phoneValue = formatted;
-        this.phoneInputRef.nativeElement.value = formatted;
+
+        if (formatted !== this.phoneValue) {
+          this.phoneValue = formatted;
+          if (this.phoneInputRef?.nativeElement) {
+            this.phoneInputRef.nativeElement.value = formatted;
+          }
+
+          // Emit the formatted value
+          this.onChange(this.phoneNumberValue || formatted);
+        }
       }
     }
   }
@@ -755,15 +1020,19 @@ export class NgxPhoneComponent
   }
 
   /**
-   * Select a country and close the dropdown.
+   * Select a country and close the dropdown - ENHANCED.
    */
   selectCountryAndClose(country: Country): void {
     this.selectCountry(
       country,
-      this.normalizedConfig.showCountryCodeInInput,
-      false,
-      true
+      true, // Always update input when selecting from dropdown
+      false, // Don't clear existing input
+      true // Mark as manual selection
     );
+
+    // Emit the country change event
+    this.countryChange.emit(country);
+
     if (this.normalizedConfig.closeOnSelect) {
       this.closeDropdown();
     }

@@ -2,21 +2,25 @@
 
 A powerful, fully-featured **Angular international phone number input component** with automatic country detection, formatting, validation, and seamless support for both **Reactive & Template-Driven Forms**.
 
-> 🔧 Built using `libphonenumber-js`, fully configurable, and ideal for global user forms.
+> 🔧 Built using `libphonenumber-js` — fully configurable, accessible, and ideal for global forms.
+
 ---
 
 ## ✨ Features
 
-- 🌍 International phone number input with auto-formatting
-- 📱 Country selector with flags and dial codes
-- 🧠 Smart validation (too short, too long, invalid, required)
+- 🌍 International input with emoji flags and dial codes
+- 📥 Reactive & Template-Driven Forms support
+- ✅ Smart validation (too short, invalid, required, etc.)
+- 🔢 Auto-format on valid entry or on blur
+- 🏁 Country selector with:
+  - Inline or separate button
+  - Lockable selection
+  - Preferred, only, or excluded countries
 - 🔁 Works with `FormControl`, `formControlName`, and `[(ngModel)]`
-- 🧩 Drop-in support for standalone and NgModule-based apps
-- 🔒 Lock country selection (optional)
-- 🎯 Custom positioning, flags, styles, and placeholder
-- 🧪 Full support for custom error visibility (focus, blur, live, etc.)
-- 🧼 Public API methods to control from parent
-- 🛠️ Built-in formatting using `AsYouType` from `libphonenumber-js`
+- 🎯 Fine-grained validation error display control (blur, focus, live, etc.)
+- 🧼 Auto-infers country code from number input (with override support)
+- 🛠️ Built-in formatting using `AsYouType` & `parsePhoneNumber`
+- 🧪 Fully standalone (Angular 14+) or usable via NgModules
 
 ---
 
@@ -30,26 +34,26 @@ npm install ngx-phone libphonenumber-js world-countries
 
 ## 🚀 Getting Started
 
-### ✅ Standalone Component Import
+### ✅ Standalone Component
 
 ```typescript
-import { NgxPhoneComponent } from 'ngx-phone';
+import { NgxPhoneModule } from 'ngx-phone';
 
 @Component({
   standalone: true,
-  imports: [NgxPhoneComponent],
+  imports: [NgxPhoneModule],
 })
 export class YourComponent {}
 ```
 
-### ✅ NgModule Import
+### ✅ NgModule
 
 ```typescript
 import { NgModule } from '@angular/core';
-import { NgxPhoneComponent } from 'ngx-phone';
+import { NgxPhoneModule } from 'ngx-phone';
 
 @NgModule({
-  imports: [NgxPhoneComponent],
+  imports: [NgxPhoneModule],
 })
 export class YourModule {}
 ```
@@ -61,13 +65,20 @@ export class YourModule {}
 ### 🧪 Template-Driven Form
 
 ```html
-<form #f="ngForm">
+<form #form="ngForm">
   <ngx-phone
     name="phone"
     [(ngModel)]="phone"
-    [defaultCountry]="'IN'"
     required
-    [showCountryCodeInInput]="true"
+    [config]="{
+      defaultCountry: 'IN',
+      showCountryCodeInInput: true,
+      autoFormat: true,
+      errorMessages: {
+        REQUIRED: 'Phone is required.',
+        INVALID: 'Invalid number.'
+      }
+    }"
     (countryChange)="onCountryChange($event)"
     (numberChange)="onNumberChange($event)"
     (validationChange)="onValidationChange($event)"
@@ -88,8 +99,11 @@ form = this.fb.group({
   <ngx-phone
     formControlName="phone"
     [formControls]="form.get('phone')"
-    [defaultCountry]="'US'"
-    [showCountryCodeInInput]="true"
+    [config]="{
+      defaultCountry: 'US',
+      showCountryCodeInInput: true,
+      autoFormat: false
+    }"
     (numberChange)="onNumberChange($event)"
     (validationChange)="onValidationChange($event)"
   ></ngx-phone>
@@ -98,40 +112,44 @@ form = this.fb.group({
 
 ---
 
-## ⚙️ Inputs
+## ⚙️ Configuration (`[config]` Input)
 
-| Input | Type | Default | Description |
-|-------|------|---------|-------------|
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
 | `defaultCountry` | `string` | `'US'` | Initial country ISO2 code |
 | `preferredCountries` | `string[]` | `[]` | Countries pinned to top |
 | `onlyCountries` | `string[]` | `[]` | Limit selectable countries |
 | `excludeCountries` | `string[]` | `[]` | Exclude countries |
-| `fallbackCountry` | `string` | `'US'` | Fallback country |
-| `dialCodeCountryPreference` | `{ [dialCode: string]: string }` | `{}` | Map dial code to preferred ISO2 |
-| `separateCountrySelector` | `boolean` | `false` | Show selector separate from input |
+| `fallbackCountry` | `string` | `'US'` | Fallback when detection fails |
+| `dialCodeCountryPreference` | `{ [dialCode: string]: string }` | `{}` | Force map dial code to ISO2 |
+| `autoDetectCountry` | `boolean` | `false` | Use browser locale to detect country |
+| `lockCountrySelection` | `boolean` | `false` | Prevent user from changing country |
+| `separateCountrySelector` | `boolean` | `false` | Show selector as separate button |
 | `countrySelectPosition` | `'before' \| 'after'` | `'before'` | Position of country selector |
-| `showFlags` | `boolean` | `true` | Show country flags |
-| `showDialCode` | `boolean` | `true` | Show country dial code |
-| `showCountryCodeInInput` | `boolean` | `false` | Show country code in input |
-| `lockCountrySelection` | `boolean` | `false` | Prevent changing country |
-| `clearInputOnCountryChange` | `boolean` | `true` | Clear input on country change |
+| `showFlags` | `boolean` | `true` | Show emoji flags |
+| `showDialCode` | `boolean` | `true` | Show dial code next to flag |
+| `showCountryCodeInInput` | `boolean` | `false` | Prepend country code in input |
+| `clearInputOnCountryChange` | `boolean` | `true` | Clear input when country changes |
 | `readonly` | `boolean` | `false` | Make input read-only |
 | `disabled` | `boolean` | `false` | Disable the input |
 | `placeholder` | `string` | `'Enter phone number'` | Input placeholder |
-| `searchPlaceholder` | `string` | `'Search...'` | Search box placeholder |
-| `noResultsText` | `string` | `'No results found'` | Text when search returns nothing |
-| `searchEnabled` | `boolean` | `true` | Enable search |
-| `dropdownContainer` | `'body' \| 'parent'` | `'body'` | Container for dropdown |
-| `dropdownWidth` | `string` | `'300px'` | Width of dropdown |
-| `dropdownMaxHeight` | `string` | `'300px'` | Max height of dropdown |
-| `format` | `'INTERNATIONAL' \| 'NATIONAL' \| 'E164'` | `'INTERNATIONAL'` | Output format |
-| `autoFormat` | `boolean` | `true` | Enable smart formatting |
-| `validateOnChange` | `boolean` | `true` | Validate while typing |
+| `searchPlaceholder` | `string` | `'Search...'` | Search input placeholder |
+| `noResultsText` | `string` | `'No results found'` | Fallback text |
+| `searchEnabled` | `boolean` | `true` | Show search box in dropdown |
+| `dropdownContainer` | `'body' \| 'parent'` | `'body'` | Append dropdown to |
+| `dropdownWidth` | `string` | `'300px'` | Width of country list |
+| `dropdownMaxHeight` | `string` | `'300px'` | Max height of list |
+| `format` | `'INTERNATIONAL' \| 'NATIONAL' \| 'E164' \| 'RFC3966'` | `'INTERNATIONAL'` | Output format |
+| `autoFormat` | `boolean` | `true` | Auto format once valid |
+| `validateOnChange` | `boolean` | `true` | Validate on typing |
 | `validateOnBlur` | `boolean` | `true` | Validate on blur |
-| `autoDetectCountry` | `boolean` | `false` | Detect from browser locale |
-| `closeOnSelect` | `boolean` | `true` | Close dropdown on selection |
-| `formControls` | `AbstractControl` | `null` | Pass FormControl manually for reactive support |
-| `showErrorsOn` | `'touched' \| 'dirty' \| 'blur' \| 'live'` | `'touched'` | When to show validation errors |
+| `strictValidation` | `boolean` | `false` | Require both valid & possible |
+| `showErrorsOn` | `'touched' \| 'dirty' \| 'focus' \| 'blur' \| 'always' \| 'live'` | `'dirty'` | When to show errors |
+| `showErrorMessages` | `boolean` | `true` | Show error text automatically |
+| `showInvalidBorder` | `boolean` | `true` | Show red border on error |
+| `errorMessages` | `Partial<Record<PhoneErrorType, string>>` | `{}` | Override default error messages |
+| `customPlaceholder` | `(country: Country) => string` | `–` | Custom placeholder per country |
+| `customFormat` | `(value: string, country: Country) => string` | `–` | Custom format function |
 
 ---
 
@@ -139,215 +157,16 @@ form = this.fb.group({
 
 | Output | Type | Description |
 |--------|------|-------------|
+| `numberChange` | `PhoneNumberValue \| null` | Emits parsed number |
 | `countryChange` | `Country` | Emits selected country |
-| `numberChange` | `PhoneNumberValue \| null` | Emits parsed phone number |
-| `validationChange` | `ValidationResult` | Emits result with error if any |
+| `validationChange` | `ValidationResult` | Emits current validation result |
 | `focus` | `void` | On input focus |
 | `blur` | `void` | On input blur |
-| `enter` | `void` | On enter key press |
+| `enter` | `void` | On Enter key press |
 
 ---
 
-
-## 🌍 Country Codes Reference
-
-Use these ISO2 codes for `onlyCountries`, `excludeCountries`, `defaultCountry`, and `fallbackCountry` configurations:
-
-| Country              | ISO2 Code |
-| -------------------- | --------- |
-| Afghanistan          | AF        |
-| Albania              | AL        |
-| Algeria              | DZ        |
-| Andorra              | AD        |
-| Angola               | AO        |
-| Argentina            | AR        |
-| Armenia              | AM        |
-| Australia            | AU        |
-| Austria              | AT        |
-| Azerbaijan           | AZ        |
-| Bahrain              | BH        |
-| Bangladesh           | BD        |
-| Belarus              | BY        |
-| Belgium              | BE        |
-| Belize               | BZ        |
-| Benin                | BJ        |
-| Bhutan               | BT        |
-| Bolivia              | BO        |
-| Bosnia & Herzegovina | BA        |
-| Botswana             | BW        |
-| Brazil               | BR        |
-| Brunei               | BN        |
-| Bulgaria             | BG        |
-| Burkina Faso         | BF        |
-| Burundi              | BI        |
-| Cambodia             | KH        |
-| Cameroon             | CM        |
-| Canada               | CA        |
-| Cape Verde           | CV        |
-| Chad                 | TD        |
-| Chile                | CL        |
-| China                | CN        |
-| Colombia             | CO        |
-| Comoros              | KM        |
-| Congo (DRC)          | CD        |
-| Costa Rica           | CR        |
-| Croatia              | HR        |
-| Cuba                 | CU        |
-| Cyprus               | CY        |
-| Czech Republic       | CZ        |
-| Denmark              | DK        |
-| Djibouti             | DJ        |
-| Dominica             | DM        |
-| Dominican Republic   | DO        |
-| Ecuador              | EC        |
-| Egypt                | EG        |
-| El Salvador          | SV        |
-| Estonia              | EE        |
-| Ethiopia             | ET        |
-| Fiji                 | FJ        |
-| Finland              | FI        |
-| France               | FR        |
-| Gabon                | GA        |
-| Gambia               | GM        |
-| Georgia              | GE        |
-| Germany              | DE        |
-| Ghana                | GH        |
-| Greece               | GR        |
-| Guatemala            | GT        |
-| Guinea               | GN        |
-| Guyana               | GY        |
-| Haiti                | HT        |
-| Honduras             | HN        |
-| Hong Kong            | HK        |
-| Hungary              | HU        |
-| Iceland              | IS        |
-| India                | IN        |
-| Indonesia            | ID        |
-| Iran                 | IR        |
-| Iraq                 | IQ        |
-| Ireland              | IE        |
-| Israel               | IL        |
-| Italy                | IT        |
-| Jamaica              | JM        |
-| Japan                | JP        |
-| Jordan               | JO        |
-| Kazakhstan           | KZ        |
-| Kenya                | KE        |
-| Korea (North)        | KP        |
-| Korea (South)        | KR        |
-| Kuwait               | KW        |
-| Kyrgyzstan           | KG        |
-| Laos                 | LA        |
-| Latvia               | LV        |
-| Lebanon              | LB        |
-| Lesotho              | LS        |
-| Liberia              | LR        |
-| Libya                | LY        |
-| Liechtenstein        | LI        |
-| Lithuania            | LT        |
-| Luxembourg           | LU        |
-| Madagascar           | MG        |
-| Malawi               | MW        |
-| Malaysia             | MY        |
-| Maldives             | MV        |
-| Mali                 | ML        |
-| Malta                | MT        |
-| Mauritania           | MR        |
-| Mauritius            | MU        |
-| Mexico               | MX        |
-| Moldova              | MD        |
-| Monaco               | MC        |
-| Mongolia             | MN        |
-| Montenegro           | ME        |
-| Morocco              | MA        |
-| Mozambique           | MZ        |
-| Myanmar              | MM        |
-| Namibia              | NA        |
-| Nepal                | NP        |
-| Netherlands          | NL        |
-| New Zealand          | NZ        |
-| Nicaragua            | NI        |
-| Niger                | NE        |
-| Nigeria              | NG        |
-| North Macedonia      | MK        |
-| Norway               | NO        |
-| Oman                 | OM        |
-| Pakistan             | PK        |
-| Palestine            | PS        |
-| Panama               | PA        |
-| Papua New Guinea     | PG        |
-| Paraguay             | PY        |
-| Peru                 | PE        |
-| Philippines          | PH        |
-| Poland               | PL        |
-| Portugal             | PT        |
-| Qatar                | QA        |
-| Romania              | RO        |
-| Russia               | RU        |
-| Rwanda               | RW        |
-| Saudi Arabia         | SA        |
-| Senegal              | SN        |
-| Serbia               | RS        |
-| Seychelles           | SC        |
-| Singapore            | SG        |
-| Slovakia             | SK        |
-| Slovenia             | SI        |
-| Somalia              | SO        |
-| South Africa         | ZA        |
-| Spain                | ES        |
-| Sri Lanka            | LK        |
-| Sudan                | SD        |
-| Suriname             | SR        |
-| Sweden               | SE        |
-| Switzerland          | CH        |
-| Syria                | SY        |
-| Taiwan               | TW        |
-| Tajikistan           | TJ        |
-| Tanzania             | TZ        |
-| Thailand             | TH        |
-| Togo                 | TG        |
-| Trinidad & Tobago    | TT        |
-| Tunisia              | TN        |
-| Turkey               | TR        |
-| Turkmenistan         | TM        |
-| Uganda               | UG        |
-| Ukraine              | UA        |
-| United Arab Emirates | AE        |
-| United Kingdom       | GB        |
-| United States        | US        |
-| Uruguay              | UY        |
-| Uzbekistan           | UZ        |
-| Venezuela            | VE        |
-| Vietnam              | VN        |
-| Yemen                | YE        |
-| Zambia               | ZM        |
-| Zimbabwe             | ZW        |
-
-### Example Usage with Country Codes
-
-```html
-<!-- Only allow specific countries -->
-<ngx-phone
-  [onlyCountries]="['US', 'CA', 'GB', 'AU']"
-  [defaultCountry]="'US'"
-></ngx-phone>
-
-<!-- Exclude certain countries -->
-<ngx-phone
-  [excludeCountries]="['KP', 'IR', 'SY']"
-  [defaultCountry]="'US'"
-></ngx-phone>
-
-<!-- Preferred countries (pinned to top) -->
-<ngx-phone
-  [preferredCountries]="['US', 'GB', 'CA', 'AU', 'DE', 'FR']"
-  [defaultCountry]="'US'"
-></ngx-phone>
-```
-
----
-
-## 📦 PhoneNumberValue Model
+## 📦 Model: PhoneNumberValue
 
 ```typescript
 interface PhoneNumberValue {
@@ -368,7 +187,7 @@ interface PhoneNumberValue {
 
 ---
 
-## ❌ ValidationResult / Errors
+## ❌ Model: ValidationResult
 
 ```typescript
 interface ValidationResult {
@@ -383,60 +202,169 @@ interface ValidationResult {
 
 ---
 
-## 💡 Public Methods
-
-Available via `@ViewChild(NgxPhoneComponent)`:
+## 💡 Public Methods (via `@ViewChild()`)
 
 | Method | Description |
 |--------|-------------|
-| `getValue()` | Returns `PhoneNumberValue` |
-| `clear()` | Clears input |
-| `setCountry(code: string)` | Manually select country |
-| `formatNumber(style?)` | Returns formatted number |
+| `getValue()` | Returns parsed `PhoneNumberValue` |
+| `clear()` | Clears the input and resets state |
+| `setCountry(code: string)` | Programmatically select country |
+| `formatNumber(style?)` | Format number in specific style |
 
 ### Example Usage
 
 ```typescript
-@ViewChild(NgxPhoneComponent) phoneComponent!: NgxPhoneComponent;
+import { NgxPhoneComponent } from 'ngx-phone';
 
-someMethod() {
-  // Get current value
-  const phoneValue = this.phoneComponent.getValue();
-  
-  // Clear the input
-  this.phoneComponent.clear();
-  
-  // Set country programmatically
-  this.phoneComponent.setCountry('GB');
-  
-  // Get formatted number
-  const formatted = this.phoneComponent.formatNumber('INTERNATIONAL');
+@ViewChild(NgxPhoneComponent) phone!: NgxPhoneComponent;
+
+submit() {
+  const value = this.phone.getValue();
+  console.log(value);
 }
 ```
 
 ---
 
-## 🧪 Advanced Configuration
+## 🌍 Country Codes
 
-### Auto-focus search input in dropdown
-- The search input in the country dropdown automatically receives focus when opened
+Use ISO2 codes for:
+- `defaultCountry`
+- `onlyCountries`
+- `preferredCountries`
+- `excludeCountries`
 
-### Auto-detect from browser locale
-- Use `navigator.language` to automatically detect user's country
+Full list available at: [ISO 3166-1 alpha-2 codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
 
-### Dial code preference override
-- Use `dialCodeCountryPreference` to map dial codes to preferred countries
+---
 
-### Performance optimizations
-- Flags and dropdown use emoji-based rendering for better performance
-- Fully accessible with `aria-*` attributes
+## ⚙️ Dial Code Preference (Advanced)
+
+You can map dial codes to a preferred country if multiple countries share the same code:
+
+```typescript
+[config]="{
+  dialCodeCountryPreference: {
+    '1': 'US', // Prefer US over Canada for +1
+    '44': 'GB'
+  }
+}"
+```
+
+---
+
+## 🎯 Validation Modes
+
+| Mode | Description |
+|------|-------------|
+| `'touched'` | Show after field is touched |
+| `'dirty'` | Show after field is modified |
+| `'blur'` | Show on blur |
+| `'focus'` | Show on focus |
+| `'live'` | Show always while typing |
+| `'always'` | Always show if invalid |
+
+---
+
+## 🔧 Custom Validators
+
+By default, `ngx-phone` validates numbers using `libphonenumber-js`. If you need **project-specific validation rules** (e.g., disallowing numbers that start with a certain digit, blocking duplicates, or enforcing custom patterns), you can provide **custom validators**.
+
+### Define a Custom Validator
+
+A custom validator is just a function that implements the `PhoneCustomValidator` type:
+
+```typescript
+import { PhoneCustomValidator } from 'ngx-phone';
+
+// Example: disallow numbers starting with 0
+export const noStartWithZeroValidator: PhoneCustomValidator = (value) => {
+  const digits = value.replace(/\D/g, '');
+  if (digits.startsWith('0')) {
+    return {
+      type: 'STARTS_WITH_ZERO', // custom error code
+      message: 'Phone number cannot start with 0', // custom error message
+    };
+  }
+  return null; // ✅ valid
+};
+```
+
+### Apply Custom Validators
+
+Pass one or more validators to the `ngx-phone` component via the `customValidators` input:
+
+```html
+<ngx-phone
+  formControlName="phoneReactive"
+  [formControls]="phoneReactiveControl"
+  [customValidators]="[noStartWithZeroValidator]"
+  [config]="{
+    defaultCountry: 'US',
+    errorMessages: { INVALID: 'Check the number again!' }
+  }"
+></ngx-phone>
+```
+
+### Validation Result
+
+When a custom validator fails, its error object is merged into the component's `validationResult`:
+
+```typescript
+{
+  "isValid": false,
+  "isPossible": true,
+  "error": {
+    "type": "STARTS_WITH_ZERO",
+    "message": "Phone number cannot start with 0"
+  }
+}
+```
+
+### Notes
+
+- ✅ Custom validators run **in addition to** the built-in libphonenumber-js validation.
+- ✅ If a custom validator returns an error, it **overrides** the default error message.
+- ⚡ You can define **any number of validators** and reuse them across forms.
+- ⚡ Validators can be **synchronous or asynchronous** (if you extend `PhoneCustomValidator` to return a `Promise`).
+
+---
+
+## 🎨 Customization
+
+Supports class overrides:
+
+| Input | Description |
+|-------|-------------|
+| `containerClass` | Wrapper around input & selector |
+| `inputClass` | Applied to `<input>` |
+| `buttonClass` | Applied to flag/selector button |
+| `dropdownClass` | Applied to country list |
+| `errorClass` | Applied to error message div |
+
+---
+
+## 🧪 Accessibility
+
+- Flag selector is keyboard-accessible
+- Input supports native validation attributes (`required`, `readonly`, etc.)
+- Screen reader-friendly country labels
+
+---
+
+## 🧪 Controlled Error Display
+
+| `showErrorMessages` | Behavior |
+|---------------------|----------|
+| `true` (default) | Shows inline error message below input |
+| `false` | You handle errors manually (via `validationChange`) |
 
 ---
 
 ## 🙌 Maintainer
 
 **Manish Patidar**  
-🔗 [@manishpatidar028](https://github.com/manishpatidar028)
+🔗 [GitHub](https://github.com/manishpatidar028)
 
 ---
 
@@ -446,6 +374,7 @@ MIT — Free for personal & commercial use
 
 ---
 
-## 🌟 Like this?
+## ⭐ Like this project?
 
-If you find this package useful, please consider giving it a ⭐ on [GitHub](https://github.com/manishpatidar028/ngx-phone)!
+Show your support by giving it a ⭐ on  
+**GitHub** → [manishpatidar028/ngx-phone](https://github.com/manishpatidar028/ngx-phone)

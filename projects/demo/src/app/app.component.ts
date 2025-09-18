@@ -1,4 +1,5 @@
 // demo-app.component.ts
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import {
   FormBuilder,
@@ -22,7 +23,7 @@ import {
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, NgxPhoneModule],
+  imports: [FormsModule, ReactiveFormsModule, NgxPhoneModule, CommonModule],
 })
 export class DemoAppComponent {
   reactiveForm: FormGroup;
@@ -40,50 +41,52 @@ export class DemoAppComponent {
     });
   }
 
-  noStartWithZeroValidator: PhoneCustomValidator = (value) => {
+  noStartWithZeroValidator: PhoneCustomValidator = (value, country) => {
+    console.log('🔍 Custom validator called with:', value, country);
+
     const digits = value.replace(/\D/g, '');
+    console.log('🔍 Extracted digits:', digits);
+
     if (digits.startsWith('0')) {
+      console.log('🔍 Returning STARTS_WITH_ZERO error');
       return {
         type: 'STARTS_WITH_ZERO',
         message: 'Phone number cannot start with 0',
       };
     }
+
+    console.log('🔍 Custom validator passed');
     return null;
   };
 
-  /** ✅ Custom validator with extra check: number must not start with 9 */
   phoneNumberValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      const value = control.value;
+      if (!control.value) return null;
 
-      if (!value) return null; // Let `Validators.required` handle empty
+      const raw = control.value.toString();
+      let nationalPart = '';
 
-      // Validate using the package's service (inject it in constructor)
-      const result = this.phoneValidator.validate(value);
-
-      if (!result?.isValid) {
-        return {
-          phoneNumber: result?.error ?? {
-            type: 'INVALID',
-            message: 'Phone number is invalid',
-          },
-        };
+      // Handle formatted US/Canada numbers (+1 xxx)
+      if (raw.startsWith('+1')) {
+        nationalPart = raw.replace(/^\+1\s*/, '').replace(/\D/g, '');
+      } else {
+        // For unformatted or other countries
+        const digits = raw.replace(/\D/g, '');
+        nationalPart = digits.startsWith('1') ? digits.substring(1) : digits;
       }
 
-      // Remove non-digit characters
-      const digits = value.replace(/\D/g, '');
+      console.log('National part extracted:', nationalPart);
 
-      // ❌ Custom logic: should not start with '9'
-      if (digits.startsWith('9')) {
-        return {
-          phoneNumber: {
-            type: 'STARTS_WITH_9',
-            message: 'Phone number should not start with 9',
-          },
-        };
+      // PRIORITY 1: Check if it starts with 9 (highest priority)
+      if (nationalPart.startsWith('9')) {
+        console.log('National number starts with 9, returning error');
+        return { STARTS_WITH_9: true };
       }
 
-      return null; // ✅ valid
+      // Add more FormControl-level validations here if needed
+      // PRIORITY 2: Check other conditions...
+
+      return null; // This validator passed, let component validator run
     };
   }
 
@@ -103,6 +106,14 @@ export class DemoAppComponent {
 
   onValidationChange(event: any, field: string) {
     console.log(`[${field}] Validation:`, event);
+    console.log(
+      `[${field}] FormControl errors:`,
+      this.phoneReactiveControl.errors
+    );
+    console.log(
+      `[${field}] FormControl valid:`,
+      this.phoneReactiveControl.valid
+    );
   }
 
   onFocus(field: string) {
@@ -118,6 +129,8 @@ export class DemoAppComponent {
   }
 
   submitReactiveForm() {
+    console.log('Reactive Form Value:', this.reactiveForm.value);
+
     if (this.reactiveForm.valid) {
       alert('✅ Reactive form submitted successfully!');
       console.log('Submitted Value:', this.reactiveForm.value);

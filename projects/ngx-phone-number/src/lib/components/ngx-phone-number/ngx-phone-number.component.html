@@ -1,11 +1,18 @@
-<div class="ngx-phone-number-container" [ngClass]="normalizedConfig.containerClass">
+<div
+  class="ngx-phone-number-container"
+  [ngClass]="normalizedConfig.containerClass"
+>
   <div class="input-wrapper" #phoneWrapperRef>
     <!-- 📦 Input Group: Country Selector (optional) + Input -->
-    <div class="input-group" [class.separate]="normalizedConfig.separateCountrySelector">
+    <div
+      class="input-group"
+      [class.separate]="normalizedConfig.separateCountrySelector"
+    >
       <!-- Country Selector BEFORE Input -->
       <button
         *ngIf="
-          normalizedConfig.separateCountrySelector && normalizedConfig.countrySelectPosition === 'before'
+          normalizedConfig.separateCountrySelector &&
+          normalizedConfig.countrySelectPosition === 'before'
         "
         class="country-selector-btn"
         [ngClass]="normalizedConfig.buttonClass"
@@ -17,7 +24,10 @@
         "
         [attr.aria-expanded]="showDropdown"
       >
-        <span class="country-flag" *ngIf="normalizedConfig.showFlags && selectedCountry">
+        <span
+          class="country-flag"
+          *ngIf="normalizedConfig.showFlags && selectedCountry"
+        >
           {{ getEmojiFlag(selectedCountry.iso2) }}
         </span>
         <span class="country-code" *ngIf="normalizedConfig.showDialCode">
@@ -41,7 +51,10 @@
       <!-- Phone Input with Inline Flag -->
       <div class="input-container" [class.has-error]="hasError">
         <button
-          *ngIf="!normalizedConfig.separateCountrySelector && normalizedConfig.showFlags"
+          *ngIf="
+            !normalizedConfig.separateCountrySelector &&
+            normalizedConfig.showFlags
+          "
           type="button"
           class="flag-trigger"
           [ngClass]="normalizedConfig.buttonClass"
@@ -85,14 +98,16 @@
           (blur)="onPhoneBlur()"
           (keydown.enter)="onEnterKey()"
           [attr.aria-label]="'Phone number input'"
-          [attr.aria-invalid]="hasError"
+          [attr.aria-invalid]="shouldShowError()"
+          [attr.aria-describedby]="shouldShowError() ? errorId : null"
         />
       </div>
 
       <!-- Country Selector AFTER Input -->
       <button
         *ngIf="
-          normalizedConfig.separateCountrySelector && normalizedConfig.countrySelectPosition === 'after'
+          normalizedConfig.separateCountrySelector &&
+          normalizedConfig.countrySelectPosition === 'after'
         "
         class="country-selector-btn"
         [ngClass]="normalizedConfig.buttonClass"
@@ -104,7 +119,10 @@
         "
         [attr.aria-expanded]="showDropdown"
       >
-        <span class="country-flag" *ngIf="normalizedConfig.showFlags && selectedCountry">
+        <span
+          class="country-flag"
+          *ngIf="normalizedConfig.showFlags && selectedCountry"
+        >
           {{ getEmojiFlag(selectedCountry.iso2) }}
         </span>
         <span class="country-code" *ngIf="normalizedConfig.showDialCode">
@@ -158,7 +176,7 @@
         <div *ngIf="preferredCountriesList.length > 0">
           <div class="section-label">Suggested</div>
           <button
-            *ngFor="let country of preferredCountriesList"
+            *ngFor="let country of preferredCountriesList; trackBy: trackByIso"
             class="country-item"
             [class.selected]="country.iso2 === selectedCountry?.iso2"
             (click)="selectCountryAndClose(country)"
@@ -192,8 +210,9 @@
   <div
     *ngIf="normalizedConfig.showErrorMessages && shouldShowError()"
     [ngClass]="['error-message', normalizedConfig.errorClass]"
+    [id]="errorId"
   >
-    <span>{{ validationResult?.error?.message }}</span>
+    <span>{{ displayedError?.message }}</span>
   </div>
 
   <!-- 🔲 Overlay to close dropdown -->

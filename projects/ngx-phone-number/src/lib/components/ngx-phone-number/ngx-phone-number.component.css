@@ -246,16 +246,3 @@
   flex-shrink: 0;
   fill: currentColor;
 }
-
-/* ==========================================================
-🌙 DARK MODE SUPPORT
-========================================================== */
-@media (prefers-color-scheme: dark) {
-  .input-container,
-  .country-selector-btn,
-  .country-dropdown,
-  .search-input,
-  .phone-input {
-    color: #000000 !important;
-  }
-}

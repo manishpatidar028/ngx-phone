@@ -60,12 +60,19 @@ export interface PhoneInputConfig {
   placeholder?: string;
   autoFocus?: boolean;
   dialCodeCountryPreference?: { [dialCode: string]: string };
+  valueMode?:
+    | 'object'
+    | 'e164'
+    | 'international'
+    | 'national'
+    | 'raw'
+    | 'string';
 
   // 🧠 Validation
   validateOnBlur?: boolean;
   validateOnChange?: boolean;
   strictValidation?: boolean;
-  errorMessages?: Partial<Record<PhoneErrorType, string>>;
+  errorMessages?: ValidationMessageMap;
   showErrorMessages?: boolean;
   showInvalidBorder?: boolean;
   showErrorsOn?: 'touched' | 'dirty' | 'always' | 'blur' | 'focus' | 'live';
@@ -97,7 +104,6 @@ export interface PhoneInputConfig {
   customFormat?: (phoneNumber: string, country: Country) => string;
 }
 
-
 /**
  * Phone number value object
  */
@@ -125,6 +131,9 @@ export interface ValidationResult {
   error?: ValidationError;
   type?: NumberType;
 }
+
+export type ValidationMessageMap = Partial<Record<PhoneErrorType, string>> &
+  Record<string, string>;
 
 /**
  * Validation errors

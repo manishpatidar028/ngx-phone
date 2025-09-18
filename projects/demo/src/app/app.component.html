@@ -14,7 +14,13 @@
           autoFormat: false,
           showFlags: true,
           errorClass: 'custom-error-style',
-          errorMessages: { INVALID: 'Check the number again!' }
+          validateOnChange: true,
+          showErrorsOn: 'blur',
+          errorMessages: {
+            required: 'Phone number is required',
+            minlength: 'Phone number is too short',
+            STARTS_WITH_9: 'Phone number should not start with 9'
+          }
         }"
         (countryChange)="onCountryChange($event, 'reactive')"
         (numberChange)="onNumberChange($event, 'reactive')"
@@ -23,8 +29,31 @@
         (blur)="onBlur('reactive')"
         (enter)="onEnter('reactive')"
       ></ngx-phone>
+      <div>
+        <!-- Manual error display -->
+        <div
+          *ngIf="phoneReactiveControl.invalid && phoneReactiveControl.touched"
+          class="custom-error-style"
+        >
+          <div *ngIf="phoneReactiveControl.errors?.['required']">
+            Phone number is required
+          </div>
+          <div *ngIf="phoneReactiveControl.errors?.['STARTS_WITH_9']">
+            Phone number should not start with 9
+          </div>
+          <div *ngIf="phoneReactiveControl.errors?.['minlength']">
+            Phone number is too short
+          </div>
+        </div>
+      </div>
 
-      <button type="submit" class="btn btn-primary">Submit</button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        (click)="submitReactiveForm()"
+      >
+        Submit
+      </button>
     </form>
   </section>
 

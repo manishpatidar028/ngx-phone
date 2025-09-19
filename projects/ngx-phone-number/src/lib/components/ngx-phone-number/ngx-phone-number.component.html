@@ -1,12 +1,28 @@
 <div
   class="ngx-phone-number-container"
   [ngClass]="normalizedConfig.containerClass"
+  [style]="getContainerStyles()"
 >
+  <!-- 🏷️ Label (if enabled) -->
+  <label
+    *ngIf="normalizedConfig.showLabel && normalizedConfig.label"
+    [ngClass]="['phone-input-label', normalizedConfig.labelClass]"
+    [class.floating]="normalizedConfig.labelPosition === 'floating'"
+    [class.inline]="normalizedConfig.labelPosition === 'inline'"
+    [for]="inputId"
+  >
+    {{ normalizedConfig.label }}
+    <span *ngIf="required" class="required-asterisk">*</span>
+  </label>
+
   <div class="input-wrapper" #phoneWrapperRef>
     <!-- 📦 Input Group: Country Selector (optional) + Input -->
     <div
       class="input-group"
       [class.separate]="normalizedConfig.separateCountrySelector"
+      [class.has-error]="hasError"
+      [class.focused]="isFocused"
+      [class.disabled]="disabled"
     >
       <!-- Country Selector BEFORE Input -->
       <button
@@ -27,6 +43,7 @@
         <span
           class="country-flag"
           *ngIf="normalizedConfig.showFlags && selectedCountry"
+          [class]="getFlagClasses()"
         >
           {{ getEmojiFlag(selectedCountry.iso2) }}
         </span>
@@ -49,20 +66,24 @@
       </button>
 
       <!-- Phone Input with Inline Flag -->
-      <div class="input-container" [class.has-error]="hasError">
+      <div 
+        class="input-container" 
+        [class.has-error]="hasError"
+        [class.custom-border]="normalizedConfig.customContainerBorder"
+      >
+        <!-- Inline Flag Button (when not using separate selector) -->
         <button
-          *ngIf="
-            !normalizedConfig.separateCountrySelector &&
-            normalizedConfig.showFlags
-          "
+          *ngIf="shouldShowInlineFlag()"
           type="button"
           class="flag-trigger"
           [ngClass]="normalizedConfig.buttonClass"
+          [class]="getFlagClasses()"
           [disabled]="disabled || normalizedConfig.lockCountrySelection"
           (click)="!normalizedConfig.lockCountrySelection && toggleDropdown()"
           [attr.aria-label]="
             'Selected country: ' + (selectedCountry?.name || 'None')
           "
+          [attr.aria-expanded]="showDropdown"
         >
           <span class="country-flag" *ngIf="selectedCountry">
             {{ getEmojiFlag(selectedCountry.iso2) }}
@@ -84,12 +105,14 @@
 
         <input
           #phoneInput
+          [id]="inputId"
           type="tel"
           class="phone-input"
-          [ngClass]="normalizedConfig.inputClass"
-          [(ngModel)]="phoneValue"
-          (ngModelChange)="onPhoneInput($event)"
-          [placeholder]="normalizedConfig.placeholder"
+          [ngClass]="[normalizedConfig.inputClass, normalizedConfig.placeholderClass]"
+          [style]="getPlaceholderStyles()"
+          [value]="phoneValue"
+          (input)="onPhoneInput($any($event.target).value)"
+          [placeholder]="getEffectivePlaceholder()"
           [disabled]="disabled"
           [readonly]="readonly"
           [required]="required"
@@ -122,6 +145,7 @@
         <span
           class="country-flag"
           *ngIf="normalizedConfig.showFlags && selectedCountry"
+          [class]="getFlagClasses()"
         >
           {{ getEmojiFlag(selectedCountry.iso2) }}
         </span>
@@ -149,12 +173,10 @@
       *ngIf="showDropdown"
       #dropdownRef
       class="country-dropdown"
-      [ngClass]="[
-        dropdownPosition === 'top' ? 'dropdown--top' : 'dropdown--bottom',
-        normalizedConfig.dropdownClass
-      ]"
+      [ngClass]="getDropdownClasses()"
       [style.max-height]="normalizedConfig.dropdownMaxHeight"
       [style.width]="normalizedConfig.dropdownWidth"
+      [style]="getDropdownStyles()"
       role="listbox"
       [attr.aria-label]="'Country selection'"
     >
@@ -164,8 +186,8 @@
           #searchInput
           type="text"
           class="search-input"
-          [(ngModel)]="searchQuery"
-          (ngModelChange)="onSearchChange($event)"
+          [value]="searchQuery"
+          (input)="onSearchChange($any($event.target).value)"
           [placeholder]="normalizedConfig.searchPlaceholder"
           [attr.aria-label]="'Search countries'"
         />
@@ -180,6 +202,7 @@
             class="country-item"
             [class.selected]="country.iso2 === selectedCountry?.iso2"
             (click)="selectCountryAndClose(country)"
+            type="button"
           >
             <span class="country-flag">{{ getEmojiFlag(country.iso2) }}</span>
             <span class="country-name">{{ country.name }}</span>
@@ -189,10 +212,11 @@
         </div>
 
         <button
-          *ngFor="let country of filteredCountries"
+          *ngFor="let country of filteredCountries; trackBy: trackByIso"
           class="country-item"
           [class.selected]="country.iso2 === selectedCountry?.iso2"
           (click)="selectCountryAndClose(country)"
+          type="button"
         >
           <span class="country-flag">{{ getEmojiFlag(country.iso2) }}</span>
           <span class="country-name">{{ country.name }}</span>
@@ -211,6 +235,8 @@
     *ngIf="normalizedConfig.showErrorMessages && shouldShowError()"
     [ngClass]="['error-message', normalizedConfig.errorClass]"
     [id]="errorId"
+    role="alert"
+    [attr.aria-live]="'polite'"
   >
     <span>{{ displayedError?.message }}</span>
   </div>

@@ -35,7 +35,6 @@ export class DemoAppComponent {
   ) {
     this.reactiveForm = this.fb.group({
       phoneReactive: new FormControl('', [
-        Validators.required,
         this.phoneNumberValidator(), // ✅ custom validator
       ]),
     });
@@ -97,14 +96,16 @@ export class DemoAppComponent {
 
   // Event hooks
   onCountryChange(event: any, field: string) {
-    console.log(`[${field}] Country changed:`, event);
+    // console.log(`[${field}] Country changed:`, event);
   }
 
   onNumberChange(event: any, field: string) {
-    console.log(`[${field}] Number changed:`, event);
+    // console.log(`[${field}] Number changed:`, event);
   }
 
   onValidationChange(event: any, field: string) {
+    console.log('Came to validation change');
+    
     console.log(`[${field}] Validation:`, event);
     console.log(
       `[${field}] FormControl errors:`,
@@ -117,15 +118,15 @@ export class DemoAppComponent {
   }
 
   onFocus(field: string) {
-    console.log(`[${field}] Input focused`);
+    // console.log(`[${field}] Input focused`);
   }
 
   onBlur(field: string) {
-    console.log(`[${field}] Input blurred`);
+    // console.log(`[${field}] Input blurred`);
   }
 
   onEnter(field: string) {
-    console.log(`[${field}] Enter pressed`);
+    // console.log(`[${field}] Enter pressed`);
   }
 
   submitReactiveForm() {

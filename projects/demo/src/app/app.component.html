@@ -10,12 +10,16 @@
         [formControls]="phoneReactiveControl"
         [customValidators]="[noStartWithZeroValidator]"
         [config]="{
+          label: 'Hey Manish',
           defaultCountry: 'US',
-          autoFormat: false,
+          autoFormat: true,
           showFlags: true,
+          flagPosition: 'end',
+          dialCodeCountryPreference: { '1': 'US', '44': 'IM' },
           errorClass: 'custom-error-style',
           validateOnChange: true,
-          showErrorsOn: 'blur',
+          showErrorsOn: 'focus',
+          placeholder: 'Enter phoneeeeee',
           errorMessages: {
             required: 'Phone number is required',
             minlength: 'Phone number is too short',

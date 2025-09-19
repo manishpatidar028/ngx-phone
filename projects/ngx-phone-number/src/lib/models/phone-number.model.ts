@@ -56,8 +56,18 @@ export interface PhoneInputConfig {
   clearInputOnCountryChange?: boolean;
   showCountryCodeInInput?: boolean;
 
-  // 🔡 Input field
+  // 🏷️ Label configuration
+  label?: string;
+  labelClass?: string;
+  showLabel?: boolean;
+  labelPosition?: 'top' | 'floating' | 'inline';
+
+  // 📝 Placeholder configuration
   placeholder?: string;
+  placeholderClass?: string;
+  customPlaceholderStyle?: { [key: string]: string };
+
+  // 🔡 Input field
   autoFocus?: boolean;
   dialCodeCountryPreference?: { [dialCode: string]: string };
   valueMode?:
@@ -83,6 +93,8 @@ export interface PhoneInputConfig {
   containerClass?: string;
   dropdownClass?: string;
   errorClass?: string;
+  customContainerBorder?: boolean;
+  containerBorderStyle?: { [key: string]: string };
 
   // 🧮 Formatting
   format?: 'INTERNATIONAL' | 'NATIONAL' | 'E164' | 'RFC3966';
@@ -98,6 +110,7 @@ export interface PhoneInputConfig {
   dropdownWidth?: string;
   dropdownMaxHeight?: string;
   closeOnSelect?: boolean;
+  dropdownPosition?: 'auto' | 'top' | 'bottom';
 
   // 🧠 Custom logic hooks
   customPlaceholder?: (country: Country) => string;

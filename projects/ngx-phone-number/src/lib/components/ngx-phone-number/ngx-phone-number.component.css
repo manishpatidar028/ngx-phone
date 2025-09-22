@@ -179,10 +179,18 @@
   border-radius: 0.375rem 0 0 0.375rem;
 }
 
+.flag-trigger.flag-start.no-divider {
+  border-right: none;
+}
+
 .flag-trigger.flag-end {
   order: 1;
   border-left: 1px solid #e5e7eb;
   border-radius: 0 0.375rem 0.375rem 0;
+}
+
+.flag-trigger.flag-end.no-divider {
+  border-left: none;
 }
 
 /* 📝 Input Container */

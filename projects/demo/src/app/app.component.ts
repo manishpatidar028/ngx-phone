@@ -11,7 +11,6 @@ import {
 import { NgForm } from '@angular/forms';
 import { Country, NgxPhoneModule, PhoneInputConfig, PhoneNumberValue, ValidationError, ValidationResult } from '../../../ngx-phone-number/src/public-api';
 
-
 @Component({
   selector: 'demo-app',
   templateUrl: './app.component.html',

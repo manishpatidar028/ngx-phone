@@ -1,21 +1,15 @@
 <div class="demo-container">
-  <h1>📱 NGX Phone Number - Demo</h1>
+  <h1>📱 NGX Phone Number - Complete Demo</h1>
 
-  <!-- ✅ Reactive Form -->
+  <!-- ✅ Reactive Form with Custom Styling -->
   <section class="form-section">
-    <h2>Reactive Form</h2>
+    <h2>Reactive Form - Full Styling Features</h2>
     <form [formGroup]="reactiveForm">
       <ngx-phone
         formControlName="phoneReactive"
         [formControls]="phoneReactiveControl"
         [customValidators]="[noStartWithZeroValidator]"
-        [config]="{
-          defaultCountry: 'US',
-          autoFormat: false,
-          showFlags: true,
-          errorClass: 'custom-error-style',
-          errorMessages: { INVALID: 'Check the number again!' }
-        }"
+        [config]="reactiveConfig"
         (countryChange)="onCountryChange($event, 'reactive')"
         (numberChange)="onNumberChange($event, 'reactive')"
         (validationChange)="onValidationChange($event, 'reactive')"
@@ -24,43 +18,202 @@
         (enter)="onEnter('reactive')"
       ></ngx-phone>
 
-      <button type="submit" class="btn btn-primary">Submit</button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="submitReactiveForm()"
+        [disabled]="!reactiveForm.valid"
+      >
+        Submit Reactive Form
+      </button>
+      
+      <div class="form-debug" *ngIf="reactiveForm.get('phoneReactive')">
+        <small>
+          Value: {{ reactiveForm.get('phoneReactive')?.value || 'empty' }} |
+          Valid: {{ reactiveForm.get('phoneReactive')?.valid }} |
+          Errors: {{ reactiveForm.get('phoneReactive')?.errors | json }}
+        </small>
+      </div>
     </form>
   </section>
 
   <hr />
 
-  <!-- ✅ Template-Driven Form -->
+  <!-- ✅ Template-Driven Form with Different Styling -->
   <section class="form-section">
-    <h2>Template-Driven Form</h2>
+    <h2>Template-Driven Form - Alternative Styling</h2>
     <form #templateForm="ngForm" (ngSubmit)="submitTemplateForm(templateForm)">
       <ngx-phone
         name="phoneTemplate"
         [(ngModel)]="templateFormValue"
+        [config]="templateConfig"
         [required]="true"
-        [config]="{
-          defaultCountry: 'IN',
-          autoDetectCountry: true
-        }"
         (countryChange)="onCountryChange($event, 'template')"
         (numberChange)="onNumberChange($event, 'template')"
         (validationChange)="onValidationChange($event, 'template')"
         (focus)="onFocus('template')"
         (blur)="onBlur('template')"
         (enter)="onEnter('template')"
-        [required]="true"
       ></ngx-phone>
 
-      <button type="submit" class="btn btn-primary">Submit</button>
+      <button 
+        type="submit" 
+        class="btn btn-primary"
+        [disabled]="!templateForm.valid"
+      >
+        Submit Template Form
+      </button>
+      
+      <div class="form-debug">
+        <small>
+          Value: {{ templateFormValue || 'empty' }} |
+          Valid: {{ templateForm.valid }}
+        </small>
+      </div>
     </form>
   </section>
 
   <hr />
 
-  <!-- 🔄 Reset -->
-  <button class="btn btn-secondary" (click)="resetForms()">
-    Reset Both Forms
-  </button>
+  <!-- ✅ Inline Label Configuration -->
+  <section class="form-section">
+    <h2>Inline Label Demo</h2>
+    <form [formGroup]="inlineForm">
+      <ngx-phone
+        formControlName="phoneInline"
+        [formControls]="phoneInlineControl"
+        [config]="inlineConfig"
+        [required]="true"
+        (numberChange)="onNumberChange($event, 'inline')"
+      ></ngx-phone>
+      
+      <div class="form-debug">
+        <small>
+          Value: {{ inlineForm.get('phoneInline')?.value || 'empty' }} |
+          Valid: {{ inlineForm.get('phoneInline')?.valid }}
+        </small>
+      </div>
+    </form>
+  </section>
 
-  <!-- 📤 Output -->
+  <hr />
+
+  <!-- ✅ Separate Country Selector Demo -->
+  <section class="form-section">
+    <h2>Separate Country Selector</h2>
+    <form [formGroup]="separateForm">
+      <ngx-phone
+        formControlName="phoneSeparate"
+        [formControls]="phoneSeparateControl"
+        [config]="separateConfig"
+        (countryChange)="onCountryChange($event, 'separate')"
+        (numberChange)="onNumberChange($event, 'separate')"
+      ></ngx-phone>
+      
+      <div class="form-debug">
+        <small>
+          Value: {{ separateForm.get('phoneSeparate')?.value || 'empty' }} |
+          Valid: {{ separateForm.get('phoneSeparate')?.valid }}
+        </small>
+      </div>
+    </form>
+  </section>
+
+  <hr />
+
+  <!-- ✅ Material Design Style Demo -->
+  <section class="form-section">
+    <h2>Material Design Inspired</h2>
+    <form [formGroup]="materialForm">
+      <ngx-phone
+        formControlName="phoneMaterial"
+        [formControls]="phoneMaterialControl"
+        [config]="materialConfig"
+        [required]="true"
+        (focus)="onMaterialFocus()"
+        (blur)="onMaterialBlur()"
+        (numberChange)="onNumberChange($event, 'material')"
+      ></ngx-phone>
+      
+      <div class="form-debug">
+        <small>
+          Value: {{ materialForm.get('phoneMaterial')?.value || 'empty' }} |
+          Valid: {{ materialForm.get('phoneMaterial')?.valid }}
+        </small>
+      </div>
+    </form>
+  </section>
+
+  <hr />
+
+  <!-- ✅ Custom Placeholder Function Demo -->
+  <section class="form-section">
+    <h2>Dynamic Placeholder</h2>
+    <form [formGroup]="dynamicForm">
+      <ngx-phone
+        formControlName="phoneDynamic"
+        [formControls]="phoneDynamicControl"
+        [config]="dynamicConfig"
+        (countryChange)="onCountryChange($event, 'dynamic')"
+        (numberChange)="onNumberChange($event, 'dynamic')"
+      ></ngx-phone>
+      
+      <div class="form-debug">
+        <small>
+          Value: {{ dynamicForm.get('phoneDynamic')?.value || 'empty' }} |
+          Valid: {{ dynamicForm.get('phoneDynamic')?.valid }}
+        </small>
+      </div>
+    </form>
+  </section>
+
+  <hr />
+
+  <!-- 🔄 Controls -->
+  <div class="controls-section">
+    <button class="btn btn-secondary" (click)="resetForms()">
+      Reset All Forms
+    </button>
+    <button class="btn btn-info" (click)="setTestValues()">
+      Set Test Values
+    </button>
+    <button class="btn btn-warning" (click)="toggleStyles()">
+      Toggle Custom Styles
+    </button>
+  </div>
+
+  <!-- 📤 Output Display -->
+  <div class="output-section">
+    <h3>Form Values & Events</h3>
+    <div class="output-grid">
+      <div class="output-card">
+        <h4>Reactive Form</h4>
+        <pre>{{ reactiveFormValue | json }}</pre>
+        <p><strong>Valid:</strong> {{ reactiveFormValid }}</p>
+      </div>
+      <div class="output-card">
+        <h4>Template Form</h4>
+        <pre>{{ templateFormValue | json }}</pre>
+        <p><strong>Valid:</strong> {{ templateFormValid }}</p>
+      </div>
+      <div class="output-card">
+        <h4>Form Values</h4>
+        <div class="form-values">
+          <div *ngFor="let item of formValues | keyvalue">
+            <strong>{{ item.key }}:</strong>
+            <pre>{{ item.value | json }}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="event-log">
+      <h4>Recent Events ({{ eventLog.length }})</h4>
+      <ul>
+        <li *ngFor="let event of eventLog; let i = index" [class.recent]="i < 3">
+          {{ event }}
+        </li>
+      </ul>
+    </div>
+  </div>
 </div>

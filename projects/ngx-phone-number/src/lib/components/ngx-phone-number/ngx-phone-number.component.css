@@ -1,261 +1,526 @@
-/* ==========================================================
-📦 CONTAINER & INPUT BASE STYLES
-========================================================== */
+/* ===================================================================
+   NgxPhoneComponent - Enhanced Styles
+   ================================================================= */
+
+/* 🏗️ Host Component */
+.ngx-phone-number-host {
+  position: relative;
+  display: block;
+  width: 100%;
+  font-family: inherit;
+}
+
+.ngx-phone-number-host.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* 📦 Main Container */
+.ngx-phone-number-container {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Custom container border - opt-in only */
+.ngx-phone-number-container.custom-border {
+  border: none !important;
+}
+
+/* 🏷️ Label Styles */
+.phone-input-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.375rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.phone-input-label.floating {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background: white;
+  padding: 0 0.25rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+  pointer-events: none;
+  transform-origin: top left;
+  transition: all 0.2s ease-in-out;
+  z-index: 10;
+}
+
+.phone-input-label.inline {
+  display: inline-block;
+  margin-right: 0.5rem;
+  margin-bottom: 0;
+}
+
+.required-asterisk {
+  color: #ef4444;
+  margin-left: 0.125rem;
+}
+
+/* 🔄 Input Wrapper */
 .input-wrapper {
   position: relative;
   width: 100%;
 }
 
+/* 📱 Input Group */
 .input-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  flex-wrap: nowrap;
-}
-
-/* When using separate selector + input */
-.input-group.separate .input-container {
-  flex: 1;
-}
-
-.input-container {
-  display: flex;
-  align-items: center;
-  flex: 1; /* 🚀 Input container takes full remaining space */
-  min-width: 0; /* Required for flex children (input) to shrink properly */
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  background-color: #fff;
-  transition: border-color 0.2s, box-shadow 0.2s;
   position: relative;
-}
-
-.input-container:focus-within {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
-}
-
-.input-container.has-error {
-  border-color: #ef4444;
-}
-
-.input-container.has-error:focus-within {
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
-}
-
-/* ==========================================================
-🔢 PHONE NUMBER INPUT FIELD
-========================================================== */
-.phone-input {
-  flex: 1; /* 📏 Input fills full space */
-  width: 100%;
-  min-width: 0; /* Required for text truncation in flexbox */
-  padding: 10px 12px;
-  border: none;
-  font-size: 15px;
-  border-radius: 6px;
-  color: #111827;
-  outline: none;
-  background: transparent;
-}
-
-/* ==========================================================
-🇨🇭 INLINE FLAG + DROPDOWN TOGGLE (inside input)
-========================================================== */
-.flag-trigger {
-  flex-shrink: 0; /* 🚫 Don't let flag shrink */
   display: flex;
-  align-items: center;
-  padding: 0 10px 0 10px;
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: white;
+  transition: all 0.2s ease-in-out;
+  overflow: hidden;
+}
+
+.input-group:focus-within {
+  border-color: #e4e6e9;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.input-group.has-error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.input-group.disabled {
+  background-color: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+.input-group.separate {
   border: none;
   background: transparent;
-  cursor: pointer;
-  height: 100%;
+  padding: 0;
+  gap: 0.5rem;
 }
 
-.country-flag {
-  font-size: 18px;
-  margin-right: 4px;
+.input-group.separate .country-selector-btn,
+.input-group.separate .input-container {
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
 }
 
-.arrow-icon {
-  width: 10px;
-  height: 6px;
-  stroke: #444;
-}
-
-/* ==========================================================
-🌍 SEPARATE COUNTRY SELECTOR BUTTON (before/after input)
-========================================================== */
+/* 🏴 Country Selector Button */
 .country-selector-btn {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 8px;
-  height: 39px;
-  flex-shrink: 0;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  background: #fff;
-  color: #111827;
+  padding: 0.75rem 1rem;
+  background: #f9fafb;
+  border: none;
+  border-right: 1px solid #e5e7eb;
   cursor: pointer;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #374151;
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.country-selector-btn .dropdown-arrow {
-  width: 10px;
-  height: 6px;
-  stroke: #444;
+.country-selector-btn:hover:not(:disabled) {
+  background-color: #f3f4f6;
 }
 
-/* ==========================================================
-📥 COUNTRY DROPDOWN BASE STYLES
-========================================================== */
+.country-selector-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.input-group.separate .country-selector-btn {
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background: white;
+}
+
+.input-group.separate .country-selector-btn:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+/* 🏴 Flag Trigger (Inline) */
+.flag-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  gap: 2px;
+  transition: all 0.2s ease-in-out;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 5;
+}
+
+.flag-trigger:hover:not(:disabled) {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.flag-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.flag-trigger.flag-start {
+  order: -1;
+  border-right: 1px solid #e5e7eb;
+  border-radius: 0.375rem 0 0 0.375rem;
+}
+
+.flag-trigger.flag-end {
+  order: 1;
+  border-left: 1px solid #e5e7eb;
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+
+/* 📝 Input Container */
+.input-container {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  background: white;
+  overflow: hidden;
+}
+
+/* Custom input container border - opt-in only */
+.input-container.custom-border {
+  border: none !important;
+}
+
+.input-container.has-error:not(.custom-border) {
+  border-color: #ef4444;
+}
+
+/* 📱 Phone Input */
+.phone-input {
+  flex: 1;
+  padding: 5px 0px;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #111827;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.phone-input::placeholder {
+  color: #9ca3af;
+  transition: all 0.2s ease-in-out;
+}
+
+.phone-input:focus::placeholder {
+  opacity: 0.7;
+}
+
+.phone-input:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Custom placeholder styling - opt-in only, no default changes */
+.phone-input.custom-placeholder::placeholder {
+  /* This class can be used to apply custom placeholder styles */
+  /* Default behavior remains unchanged */
+}
+
+/* 🏴 Country Flag */
+.country-flag {
+  font-size: 1.125rem;
+  line-height: 1;
+  display: inline-block;
+  min-width: 1.25rem;
+  text-align: center;
+}
+
+/* 🔄 Dropdown Arrow */
+.dropdown-arrow,
+.arrow-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease-in-out;
+}
+
+.country-selector-btn[aria-expanded="true"] .dropdown-arrow,
+.flag-trigger[aria-expanded="true"] .arrow-icon {
+  transform: rotate(180deg);
+}
+
+/* 🌍 Country Dropdown */
 .country-dropdown {
   position: absolute;
   left: 0;
   right: 0;
-  z-index: 999;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 1000;
   max-height: 300px;
-  overflow-y: auto;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: #fff;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  opacity: 0;
-  transform: translateY(-5px);
-  visibility: hidden;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  will-change: transform, opacity;
-}
-
-.country-dropdown.dropdown--bottom {
-  top: 100%;
-  margin-top: 4px;
-  opacity: 1;
-  transform: translateY(0);
-  visibility: visible;
+  overflow: hidden;
 }
 
 .country-dropdown.dropdown--top {
   bottom: 100%;
-  margin-bottom: 4px;
-  opacity: 1;
-  transform: translateY(0);
-  visibility: visible;
+  top: auto;
+  margin-bottom: 0.25rem;
+  margin-top: 0;
 }
 
-/* ==========================================================
-🔍 SEARCH INPUT INSIDE DROPDOWN
-========================================================== */
+.country-dropdown.dropdown--bottom {
+  top: 100%;
+  bottom: auto;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+}
+
+/* 🔍 Search Container */
 .search-container {
-  padding: 8px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+  background: #fafafa;
 }
 
 .search-input {
   width: 100%;
-  padding: 8px 12px;
-  font-size: 14px;
+  padding: 0.5rem;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
   outline: none;
+  transition: border-color 0.2s ease-in-out;
 }
 
 .search-input:focus {
   border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
-/* ==========================================================
-🌐 COUNTRY LIST INSIDE DROPDOWN
-========================================================== */
+/* 📋 Country List */
 .country-list {
-  height: calc(300px - 60px); /* 🧮 Space for search box */
-  overflow: auto;
+  max-height: 250px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
 }
 
+.country-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.country-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.country-list::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 3px;
+}
+
+.country-list::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+/* 🏷️ Section Label */
+.section-label {
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  background: #f9fafb;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+/* 🌐 Country Item */
 .country-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 16px;
-  font-size: 14px;
   width: 100%;
-  background: none;
+  padding: 0.75rem 1rem;
+  background: transparent;
   border: none;
-  text-align: left;
   cursor: pointer;
-  transition: background 0.2s;
+  text-align: left;
+  gap: 0.75rem;
+  transition: background-color 0.2s ease-in-out;
+  font-size: 0.875rem;
 }
 
-.country-item:hover,
-.country-item.selected {
+.country-item:hover {
   background-color: #f3f4f6;
 }
 
 .country-item.selected {
-  font-weight: bold;
-  color: #2563eb;
+  background-color: #eff6ff;
+  color: #1d4ed8;
 }
 
-.section-label {
-  padding: 6px 16px;
-  font-size: 12px;
-  color: #6b7280;
+.country-item .country-name {
+  flex: 1;
+  color: #111827;
+  font-weight: 400;
+}
+
+.country-item.selected .country-name {
+  color: #1d4ed8;
   font-weight: 500;
 }
 
-.list-divider {
-  margin: 4px 0;
-  height: 1px;
-  background: #e5e7eb;
-  border: none;
+.country-item .country-code {
+  color: #6b7280;
+  font-size: 0.8125rem;
+  min-width: 3rem;
+  text-align: right;
 }
 
-/* ==========================================================
-❌ NO RESULTS / OVERLAY / ERROR MESSAGES
-========================================================== */
+.country-item.selected .country-code {
+  color: #1d4ed8;
+}
+
+/* ➖ List Divider */
+.list-divider {
+  border: none;
+  border-top: 1px solid #f3f4f6;
+  margin: 0;
+}
+
+/* ❌ No Results */
 .no-results {
-  padding: 16px;
+  padding: 2rem 1rem;
   text-align: center;
   color: #6b7280;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
+.no-results p {
+  margin: 0;
+}
+
+/* ❌ Error Message */
+.error-message {
+  margin-top: 0.375rem;
+  font-size: 0.8125rem;
+  color: #ef4444;
+  line-height: 1.4;
+}
+
+.error-message span {
+  display: block;
+}
+
+/* 🔲 Dropdown Overlay */
 .dropdown-overlay {
   position: fixed;
-  inset: 0;
-  z-index: 998;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: transparent;
+  z-index: 999;
 }
 
-.error-message {
-  padding: 5px 0px;
-  font-size: 13px;
+/* 🎯 Focus States */
+.ngx-phone-number-host:focus-within .input-group:not(.has-error) {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Floating label animation when focused or has value */
+.input-group:focus-within .phone-input-label.floating,
+.input-group.has-value .phone-input-label.floating {
+  transform: translateY(-1.5rem) scale(0.85);
+  color: #3b82f6;
+}
+
+.input-group.has-error .phone-input-label.floating {
   color: #ef4444;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
-.error-icon {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  fill: currentColor;
-}
-
-/* ==========================================================
-🌙 DARK MODE SUPPORT
-========================================================== */
-@media (prefers-color-scheme: dark) {
-  .input-container,
-  .country-selector-btn,
-  .country-dropdown,
-  .search-input,
-  .phone-input {
-    color: #000000 !important;
+/* 📱 Responsive Design */
+@media (max-width: 640px) {
+  .country-dropdown {
+    left: -1rem;
+    right: -1rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    max-width: calc(100vw - 2rem);
   }
+
+  .input-group.separate {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .country-selector-btn {
+    justify-content: center;
+  }
+
+  .phone-input {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+}
+
+/* 🎨 High Contrast Support */
+@media (prefers-contrast: high) {
+  .input-group {
+    border-width: 2px;
+  }
+
+  .country-item:hover {
+    background-color: #e5e7eb;
+  }
+
+  .country-item.selected {
+    background-color: #dbeafe;
+    border: 2px solid #3b82f6;
+  }
+}
+
+/* 🌙 Dark Mode Support */
+
+/* ♿ Accessibility Improvements */
+/* .country-item:focus,
+.flag-trigger:focus,
+.country-selector-btn:focus,
+.phone-input:focus {
+  outline: 2px solid #d5d7da;
+  outline-offset: 2px;
+} */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* 🎯 Utility Classes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

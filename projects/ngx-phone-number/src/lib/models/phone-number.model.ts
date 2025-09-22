@@ -56,16 +56,33 @@ export interface PhoneInputConfig {
   clearInputOnCountryChange?: boolean;
   showCountryCodeInInput?: boolean;
 
-  // 🔡 Input field
+  // 🏷️ Label configuration
+  label?: string;
+  labelClass?: string;
+  showLabel?: boolean;
+  labelPosition?: 'top' | 'floating' | 'inline';
+
+  // 📝 Placeholder configuration
   placeholder?: string;
+  placeholderClass?: string;
+  customPlaceholderStyle?: { [key: string]: string };
+
+  // 🔡 Input field
   autoFocus?: boolean;
   dialCodeCountryPreference?: { [dialCode: string]: string };
+  valueMode?:
+    | 'object'
+    | 'e164'
+    | 'international'
+    | 'national'
+    | 'raw'
+    | 'string';
 
   // 🧠 Validation
   validateOnBlur?: boolean;
   validateOnChange?: boolean;
   strictValidation?: boolean;
-  errorMessages?: Partial<Record<PhoneErrorType, string>>;
+  errorMessages?: ValidationMessageMap;
   showErrorMessages?: boolean;
   showInvalidBorder?: boolean;
   showErrorsOn?: 'touched' | 'dirty' | 'always' | 'blur' | 'focus' | 'live';
@@ -76,6 +93,8 @@ export interface PhoneInputConfig {
   containerClass?: string;
   dropdownClass?: string;
   errorClass?: string;
+  customContainerBorder?: boolean;
+  containerBorderStyle?: { [key: string]: string };
 
   // 🧮 Formatting
   format?: 'INTERNATIONAL' | 'NATIONAL' | 'E164' | 'RFC3966';
@@ -91,12 +110,12 @@ export interface PhoneInputConfig {
   dropdownWidth?: string;
   dropdownMaxHeight?: string;
   closeOnSelect?: boolean;
+  dropdownPosition?: 'auto' | 'top' | 'bottom';
 
   // 🧠 Custom logic hooks
   customPlaceholder?: (country: Country) => string;
   customFormat?: (phoneNumber: string, country: Country) => string;
 }
-
 
 /**
  * Phone number value object
@@ -125,6 +144,9 @@ export interface ValidationResult {
   error?: ValidationError;
   type?: NumberType;
 }
+
+export type ValidationMessageMap = Partial<Record<PhoneErrorType, string>> &
+  Record<string, string>;
 
 /**
  * Validation errors

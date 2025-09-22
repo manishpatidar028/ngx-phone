@@ -57,7 +57,7 @@ export class DemoAppComponent implements OnInit {
     labelClass: 'custom-label-class',
     showLabel: true,
     labelPosition: 'top',
-
+    showInlineDivider: false,
     // Basic Settings
     defaultCountry: 'US',
     autoFormat: true,
@@ -81,7 +81,7 @@ export class DemoAppComponent implements OnInit {
     // Container Styling
     customContainerBorder: true,
     containerBorderStyle: {
-      border: '2px solid #e5e7eb',
+      border: 'none',
       'border-radius': '12px',
       'box-shadow': '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
       background: 'linear-gradient(145deg, #ffffff, #f8fafc)',
@@ -105,7 +105,7 @@ export class DemoAppComponent implements OnInit {
 
     // Validation Settings
     validateOnChange: true,
-    showErrorsOn: 'dirty',
+    showErrorsOn: 'focus',
     showErrorMessages: true,
     showInvalidBorder: true,
 
@@ -237,7 +237,7 @@ export class DemoAppComponent implements OnInit {
     errorClass: 'mat-error-text',
 
     placeholder: '',
-    showErrorsOn: 'touched',
+    showErrorsOn: 'focus',
 
     errorMessages: {
       REQUIRED: 'Phone number is required',

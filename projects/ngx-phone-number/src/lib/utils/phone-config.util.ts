@@ -4,7 +4,10 @@ import { PhoneInputConfig } from '../models/phone-number.model';
  * Default configuration for phone input component
  * Note: Function properties like customPlaceholder and customFormat are optional
  */
-const DEFAULT_CONFIG: Omit<Required<PhoneInputConfig>, 'customPlaceholder' | 'customFormat'> = {
+const DEFAULT_CONFIG: Omit<
+  Required<PhoneInputConfig>,
+  'customPlaceholder' | 'customFormat'
+> = {
   // Country selection
   defaultCountry: 'US',
   preferredCountries: [],
@@ -22,6 +25,7 @@ const DEFAULT_CONFIG: Omit<Required<PhoneInputConfig>, 'customPlaceholder' | 'cu
   lockCountrySelection: false,
   clearInputOnCountryChange: false,
   showCountryCodeInInput: false,
+  showInlineDivider: true,
 
   // Label configuration
   label: '',
@@ -122,7 +126,10 @@ export function normalizePhoneConfig(
   };
 
   // Validation for incompatible options
-  if (normalized.separateCountrySelector && normalized.flagPosition === 'none') {
+  if (
+    normalized.separateCountrySelector &&
+    normalized.flagPosition === 'none'
+  ) {
     console.warn(
       'NgxPhone: separateCountrySelector is true but flagPosition is "none". Setting showFlags to false.'
     );
@@ -156,7 +163,11 @@ export function normalizePhoneConfig(
   }
 
   // Validate show errors on
-  if (!['touched', 'dirty', 'always', 'blur', 'focus', 'live'].includes(normalized.showErrorsOn)) {
+  if (
+    !['touched', 'dirty', 'always', 'blur', 'focus', 'live'].includes(
+      normalized.showErrorsOn
+    )
+  ) {
     console.warn(
       `NgxPhone: Invalid showErrorsOn "${normalized.showErrorsOn}". Using "dirty".`
     );
@@ -205,9 +216,7 @@ export function validatePhoneConfig(config: PhoneInputConfig): string[] {
   }
 
   if (config.labelPosition === 'floating' && !config.label) {
-    warnings.push(
-      'labelPosition is "floating" but no label text is provided.'
-    );
+    warnings.push('labelPosition is "floating" but no label text is provided.');
   }
 
   return warnings;
@@ -224,10 +233,13 @@ export function getEffectivePlaceholder(
     try {
       return config.customPlaceholder(selectedCountry);
     } catch (error) {
-      console.warn('NgxPhone: Custom placeholder function threw an error:', error);
+      console.warn(
+        'NgxPhone: Custom placeholder function threw an error:',
+        error
+      );
     }
   }
-  
+
   return config.placeholder;
 }
 

@@ -40,7 +40,10 @@ import {
 import { CountryService } from '../../services/country.service';
 import { PhoneValidationService } from '../../services/phone-validator.service';
 import { PlatformHelper } from '../../utils/platform.util';
-import { normalizePhoneConfig, NormalizedPhoneConfig } from '../../utils/phone-config.util';
+import {
+  normalizePhoneConfig,
+  NormalizedPhoneConfig,
+} from '../../utils/phone-config.util';
 import {
   shouldDetectCountryFromInput as shouldDetectFromInputUtil,
   extractNationalNumber as extractNationalNumberUtil,
@@ -148,7 +151,7 @@ export class NgxPhoneComponent
 
   searchQuery = '';
   highlightedIndex = -1;
-  
+
   // Generate unique IDs for accessibility
   public readonly errorId = `ngx-phone-err-${Math.random()
     .toString(36)
@@ -168,6 +171,7 @@ export class NgxPhoneComponent
   private onTouched: () => void = () => {};
   private hasUserInteracted = false;
   private hasBeenFocused = false; // Track if input has ever been focused
+  private hasShownError = false; // Track if error was ever shown during current session
 
   private _normalized!: NormalizedPhoneConfig;
   get normalizedConfig(): NormalizedPhoneConfig {
@@ -227,29 +231,32 @@ export class NgxPhoneComponent
   /** Get container styles including custom border */
   getContainerStyles(): { [key: string]: string } {
     const styles: { [key: string]: string } = {};
-    
-    if (this.normalizedConfig.customContainerBorder && this.normalizedConfig.containerBorderStyle) {
+
+    if (
+      this.normalizedConfig.customContainerBorder &&
+      this.normalizedConfig.containerBorderStyle
+    ) {
       Object.assign(styles, this.normalizedConfig.containerBorderStyle);
     }
-    
+
     return styles;
   }
 
   /** Get placeholder styles */
   getPlaceholderStyles(): { [key: string]: string } {
     const styles: { [key: string]: string } = {};
-    
+
     if (this.normalizedConfig.customPlaceholderStyle) {
       Object.assign(styles, this.normalizedConfig.customPlaceholderStyle);
     }
-    
+
     return styles;
   }
 
   /** Get dropdown styles including proper positioning */
   getDropdownStyles(): { [key: string]: string } {
     const styles: { [key: string]: string } = {};
-    
+
     if (this.actualDropdownPosition === 'top') {
       styles['bottom'] = '100%';
       styles['top'] = 'auto';
@@ -259,31 +266,32 @@ export class NgxPhoneComponent
       styles['bottom'] = 'auto';
       styles['margin-top'] = '4px';
     }
-    
+
     return styles;
   }
 
   /** Get dropdown CSS classes */
   getDropdownClasses(): string[] {
     const classes = [
-      this.actualDropdownPosition === 'top' ? 'dropdown--top' : 'dropdown--bottom',
-      this.normalizedConfig.dropdownClass || ''
+      this.actualDropdownPosition === 'top'
+        ? 'dropdown--top'
+        : 'dropdown--bottom',
+      this.normalizedConfig.dropdownClass || '',
     ].filter(Boolean);
-    
+
     return classes;
   }
 
   /** Get flag CSS classes */
   getFlagClasses(): string {
-    const classes = [];
-    
-    if (this.normalizedConfig.flagPosition === 'start') {
-      classes.push('flag-start');
-    } else if (this.normalizedConfig.flagPosition === 'end') {
-      classes.push('flag-end');
-    }
-    
-    return classes.join(' ');
+    return [
+      this.normalizedConfig.flagPosition === 'start'
+        ? 'flag-start'
+        : 'flag-end',
+      this.normalizedConfig.showInlineDivider === false ? 'no-divider' : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
   }
 
   /** Get effective placeholder text */
@@ -291,15 +299,17 @@ export class NgxPhoneComponent
     if (this.normalizedConfig.customPlaceholder && this.selectedCountry) {
       return this.normalizedConfig.customPlaceholder(this.selectedCountry);
     }
-    
+
     return this.normalizedConfig.placeholder || 'Enter phone number';
   }
 
   /** Check if inline flag should be shown */
   shouldShowInlineFlag(): boolean {
-    return !this.normalizedConfig.separateCountrySelector && 
-           this.normalizedConfig.showFlags &&
-           this.normalizedConfig.flagPosition !== 'none';
+    return (
+      !this.normalizedConfig.separateCountrySelector &&
+      this.normalizedConfig.showFlags &&
+      this.normalizedConfig.flagPosition !== 'none'
+    );
   }
 
   get displayedError(): { type: string; message: string } | null {
@@ -417,7 +427,7 @@ export class NgxPhoneComponent
       // This handles cases where detection utilities find patterns we didn't catch immediately
       const previousCountryIso = this.selectedCountry?.iso2;
       this.detectCountryFromInput(trimmedValue);
-      
+
       // If country changed, ensure immediate UI update
       if (previousCountryIso !== this.selectedCountry?.iso2) {
         this.cdr.detectChanges();
@@ -473,10 +483,12 @@ export class NgxPhoneComponent
       // Apply dialCodeCountryPreference if configured
       if (detected && this.normalizedConfig.dialCodeCountryPreference) {
         const dialCodeNumber = detected.dialCode.replace('+', '');
-        const preferredIso = this.normalizedConfig.dialCodeCountryPreference[dialCodeNumber];
-        
+        const preferredIso =
+          this.normalizedConfig.dialCodeCountryPreference[dialCodeNumber];
+
         if (preferredIso) {
-          const preferredCountry = this.countryService.getCountryByIso2(preferredIso);
+          const preferredCountry =
+            this.countryService.getCountryByIso2(preferredIso);
           if (preferredCountry) {
             detected = preferredCountry;
           }
@@ -487,10 +499,10 @@ export class NgxPhoneComponent
     if (detected && detected.iso2 !== this.selectedCountry?.iso2) {
       this.selectCountry(detected, false, false, false);
       this.countryChange.emit(detected);
-      
+
       // Force change detection to update flag display immediately
       this.cdr.markForCheck();
-      
+
       // Update filtered countries to ensure proper display in dropdown
       this.filterCountries(this.searchQuery);
     }
@@ -558,7 +570,7 @@ export class NgxPhoneComponent
 
       this.onChange(this.phoneValue || null);
     }
-    
+
     // Force UI update if country changed (especially for flag display)
     if (previousCountry?.iso2 !== country.iso2) {
       this.cdr.markForCheck();
@@ -711,7 +723,7 @@ export class NgxPhoneComponent
   // Input Event - FIXED TO USE COUNTRYSERVICE
   // -------------------------------------------------------------------
 
-  /** Handle user input - ENHANCED WITH DIALCODE PREFERENCE SUPPORT */
+  /** Handle user input - ENHANCED WITH REAL-TIME VALIDATION */
   onPhoneInput(value: string): void {
     if (this.disabled || this.readonly) return;
 
@@ -722,36 +734,44 @@ export class NgxPhoneComponent
     // IMMEDIATE country detection using CountryService
     if (value.startsWith('+') && value !== previousValue) {
       let detectedCountry = this.countryService.detectCountryFromNumber(value);
-      
+
       // Apply dialCodeCountryPreference if configured
       if (detectedCountry && this.normalizedConfig.dialCodeCountryPreference) {
         const dialCodeNumber = detectedCountry.dialCode.replace('+', '');
-        const preferredIso = this.normalizedConfig.dialCodeCountryPreference[dialCodeNumber];
-        
+        const preferredIso =
+          this.normalizedConfig.dialCodeCountryPreference[dialCodeNumber];
+
         if (preferredIso) {
-          const preferredCountry = this.countryService.getCountryByIso2(preferredIso);
+          const preferredCountry =
+            this.countryService.getCountryByIso2(preferredIso);
           if (preferredCountry) {
             detectedCountry = preferredCountry;
           }
         }
       }
-      
-      if (detectedCountry && detectedCountry.iso2 !== this.selectedCountry?.iso2) {
+
+      if (
+        detectedCountry &&
+        detectedCountry.iso2 !== this.selectedCountry?.iso2
+      ) {
         // Update country immediately
         this.selectedCountry = detectedCountry;
-        
+
         // Reset country lock status since user is manually entering country code
         this.isCountryLocked = false;
         this.isManualCountrySelection = false;
-        
+
         // Emit country change event
         this.countryChange.emit(detectedCountry);
-        
+
         // Apply formatting if we have enough digits
         const digits = value.replace(/\D/g, '');
         if (digits.length >= 2) {
           try {
-            const formatted = this.validationService.formatAsYouType(value, detectedCountry.iso2);
+            const formatted = this.validationService.formatAsYouType(
+              value,
+              detectedCountry.iso2
+            );
             if (formatted && formatted !== value) {
               this.phoneValue = formatted;
               // Update the DOM input element directly
@@ -763,7 +783,7 @@ export class NgxPhoneComponent
             // Keep original value on formatting error
           }
         }
-        
+
         // Force immediate change detection for flag update
         this.cdr.detectChanges();
       } else if (this.selectedCountry) {
@@ -771,7 +791,10 @@ export class NgxPhoneComponent
         const digits = value.replace(/\D/g, '');
         if (digits.length >= 2) {
           try {
-            const formatted = this.validationService.formatAsYouType(value, this.selectedCountry.iso2);
+            const formatted = this.validationService.formatAsYouType(
+              value,
+              this.selectedCountry.iso2
+            );
             if (formatted && formatted !== value) {
               this.phoneValue = formatted;
               // Update the DOM input element directly
@@ -786,10 +809,20 @@ export class NgxPhoneComponent
       }
     }
 
+    // IMMEDIATE validation for real-time error updates (if error was already shown)
+    if (
+      this.hasShownError ||
+      this.normalizedConfig.showErrorsOn === 'live' ||
+      this.normalizedConfig.showErrorsOn === 'always'
+    ) {
+      this.validateNumber();
+      this.cdr.markForCheck(); // Ensure UI updates immediately for error state changes
+    }
+
     // Emit immediately for immediate FormControl updates
     this.emitValue();
 
-    // Schedule debounced validation
+    // Schedule debounced validation for other cases
     this.phoneInput$.next(value);
   }
 
@@ -814,6 +847,7 @@ export class NgxPhoneComponent
       this.validationResult = null;
       this.isValid = true; // Reset validation state
       this.isPossible = false;
+      this.hasShownError = false; // Reset error display tracking
 
       if (this.phoneInputRef?.nativeElement) {
         this.phoneInputRef.nativeElement.value = '';
@@ -893,6 +927,7 @@ export class NgxPhoneComponent
     this.isPossible = false;
     this.hasUserInteracted = false;
     this.hasBeenFocused = false;
+    this.hasShownError = false; // Reset error display tracking
     this.isCountryLocked = false;
     this.isManualCountrySelection = false;
 
@@ -963,13 +998,13 @@ export class NgxPhoneComponent
     if (!iso2 || iso2.length !== 2) {
       return '🏳️'; // Default flag if invalid ISO2
     }
-    
+
     // Convert ISO2 code to emoji flag using Unicode regional indicator symbols
     const codePoints = iso2
       .toUpperCase()
       .split('')
-      .map(char => 127397 + char.charCodeAt(0));
-    
+      .map((char) => 127397 + char.charCodeAt(0));
+
     return String.fromCodePoint(...codePoints);
   }
 
@@ -1014,8 +1049,6 @@ export class NgxPhoneComponent
     this.filterCountries('');
   }
 
-
-
   /**
    * Called when input gains focus - ENHANCED.
    */
@@ -1024,7 +1057,7 @@ export class NgxPhoneComponent
     this.hasUserInteracted = true;
     this.hasBeenFocused = true; // Mark that input has been focused
     this.focus.emit();
-    
+
     // Trigger validation immediately for focus-based error display
     if (this.normalizedConfig.showErrorsOn === 'focus') {
       this.validateNumber();
@@ -1040,11 +1073,14 @@ export class NgxPhoneComponent
     this.blur.emit();
 
     // Trigger validation on blur if configured
-    if (this.normalizedConfig.validateOnBlur || this.normalizedConfig.showErrorsOn === 'blur') {
+    if (
+      this.normalizedConfig.validateOnBlur ||
+      this.normalizedConfig.showErrorsOn === 'blur'
+    ) {
       this.validateNumber();
     }
   }
-  
+
   /**
    * Handle Enter key press on input field.
    */
@@ -1101,13 +1137,30 @@ export class NgxPhoneComponent
     this.cdr.detectChanges();
   }
 
-  /** Determine if error message should be shown - ENHANCED */
+  /** Determine if error message should be shown - ENHANCED WITH REAL-TIME PERSISTENT ERROR DISPLAY */
   shouldShowError(): boolean {
     const hasAnyError = !!this.displayedError;
 
-    if (!hasAnyError) return false;
+    // Update hasShownError flag if we have an error and user has interacted
+    if (
+      hasAnyError &&
+      (this.hasUserInteracted || this.hasBeenFocused || this.isFocused)
+    ) {
+      this.hasShownError = true;
+    }
 
-    // Reactive Forms
+    // Reset hasShownError ONLY when no error exists (error resolved)
+    if (!hasAnyError) {
+      this.hasShownError = false;
+      return false;
+    }
+
+    // UNIVERSAL BEHAVIOR: Once error is shown, keep showing until resolved
+    if (this.hasShownError) {
+      return true;
+    }
+
+    // Initial error trigger based on showErrorsOn setting
     if (this.formControls) {
       const c = this.formControls;
       switch (this.normalizedConfig.showErrorsOn) {
@@ -1127,7 +1180,7 @@ export class NgxPhoneComponent
       }
     }
 
-    // Template-driven fallback
+    // Template-driven fallback - initial trigger conditions
     switch (this.normalizedConfig.showErrorsOn) {
       case 'blur':
         return !this.isFocused && this.hasBeenFocused && hasAnyError;

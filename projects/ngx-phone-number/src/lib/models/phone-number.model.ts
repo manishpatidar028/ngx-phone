@@ -55,6 +55,7 @@ export interface PhoneInputConfig {
   lockCountrySelection?: boolean;
   clearInputOnCountryChange?: boolean;
   showCountryCodeInInput?: boolean;
+  showInlineDivider?: boolean;
 
   // 🏷️ Label configuration
   label?: string;

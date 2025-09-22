@@ -168,6 +168,7 @@ export class NgxPhoneComponent
   private onTouched: () => void = () => {};
   private hasUserInteracted = false;
   private hasBeenFocused = false; // Track if input has ever been focused
+  private hasShownError = false; // Track if error was ever shown during current session
 
   private _normalized!: NormalizedPhoneConfig;
   get normalizedConfig(): NormalizedPhoneConfig {
@@ -711,7 +712,7 @@ export class NgxPhoneComponent
   // Input Event - FIXED TO USE COUNTRYSERVICE
   // -------------------------------------------------------------------
 
-  /** Handle user input - ENHANCED WITH DIALCODE PREFERENCE SUPPORT */
+  /** Handle user input - ENHANCED WITH REAL-TIME VALIDATION */
   onPhoneInput(value: string): void {
     if (this.disabled || this.readonly) return;
 
@@ -786,10 +787,16 @@ export class NgxPhoneComponent
       }
     }
 
+    // IMMEDIATE validation for real-time error updates (if error was already shown)
+    if (this.hasShownError || this.normalizedConfig.showErrorsOn === 'live' || this.normalizedConfig.showErrorsOn === 'always') {
+      this.validateNumber();
+      this.cdr.markForCheck(); // Ensure UI updates immediately for error state changes
+    }
+
     // Emit immediately for immediate FormControl updates
     this.emitValue();
 
-    // Schedule debounced validation
+    // Schedule debounced validation for other cases
     this.phoneInput$.next(value);
   }
 
@@ -814,6 +821,7 @@ export class NgxPhoneComponent
       this.validationResult = null;
       this.isValid = true; // Reset validation state
       this.isPossible = false;
+      this.hasShownError = false; // Reset error display tracking
 
       if (this.phoneInputRef?.nativeElement) {
         this.phoneInputRef.nativeElement.value = '';
@@ -893,6 +901,7 @@ export class NgxPhoneComponent
     this.isPossible = false;
     this.hasUserInteracted = false;
     this.hasBeenFocused = false;
+    this.hasShownError = false; // Reset error display tracking
     this.isCountryLocked = false;
     this.isManualCountrySelection = false;
 
@@ -1014,8 +1023,6 @@ export class NgxPhoneComponent
     this.filterCountries('');
   }
 
-
-
   /**
    * Called when input gains focus - ENHANCED.
    */
@@ -1101,13 +1108,27 @@ export class NgxPhoneComponent
     this.cdr.detectChanges();
   }
 
-  /** Determine if error message should be shown - ENHANCED */
+  /** Determine if error message should be shown - ENHANCED WITH REAL-TIME PERSISTENT ERROR DISPLAY */
   shouldShowError(): boolean {
     const hasAnyError = !!this.displayedError;
 
-    if (!hasAnyError) return false;
+    // Update hasShownError flag if we have an error and user has interacted
+    if (hasAnyError && (this.hasUserInteracted || this.hasBeenFocused || this.isFocused)) {
+      this.hasShownError = true;
+    }
 
-    // Reactive Forms
+    // Reset hasShownError ONLY when no error exists (error resolved)
+    if (!hasAnyError) {
+      this.hasShownError = false;
+      return false;
+    }
+
+    // UNIVERSAL BEHAVIOR: Once error is shown, keep showing until resolved
+    if (this.hasShownError) {
+      return true;
+    }
+
+    // Initial error trigger based on showErrorsOn setting
     if (this.formControls) {
       const c = this.formControls;
       switch (this.normalizedConfig.showErrorsOn) {
@@ -1127,7 +1148,7 @@ export class NgxPhoneComponent
       }
     }
 
-    // Template-driven fallback
+    // Template-driven fallback - initial trigger conditions
     switch (this.normalizedConfig.showErrorsOn) {
       case 'blur':
         return !this.isFocused && this.hasBeenFocused && hasAnyError;

@@ -743,7 +743,7 @@ We welcome contributions! Please read our contributing guidelines and submit pul
 ### Development Setup
 
 ```bash
-git clone https://github.com/manishpatidar028/ngx-phone.git
+git clone https://github.com/manishpatidar028/ngx-phone-number.git
 cd ngx-phone
 npm install
 npm run build

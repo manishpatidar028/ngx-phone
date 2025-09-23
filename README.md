@@ -755,7 +755,7 @@ npm run test
 ## 🙌 Maintainer
 
 **Manish Patidar**  
-🔗 [GitHub](https://github.com/manishpatidar028) | [LinkedIn](https://linkedin.com/in/manishpatidar028)
+🔗 [GitHub](https://github.com/manishpatidar028) | [LinkedIn](https://www.linkedin.com/in/manish-patidar-30628b152/)
 
 ---
 

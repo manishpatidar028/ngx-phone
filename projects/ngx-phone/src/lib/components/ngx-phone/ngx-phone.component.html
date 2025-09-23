@@ -66,8 +66,8 @@
       </button>
 
       <!-- Phone Input with Inline Flag -->
-      <div 
-        class="input-container" 
+      <div
+        class="input-container"
         [class.has-error]="hasError"
         [class.custom-border]="normalizedConfig.customContainerBorder"
       >
@@ -86,7 +86,16 @@
           [attr.aria-expanded]="showDropdown"
         >
           <span class="country-flag" *ngIf="selectedCountry">
-            {{ getEmojiFlag(selectedCountry.iso2) }}
+            <span
+              [innerHTML]="getEmojiFlag(selectedCountry.iso2)"
+              [class.flag-emoji]="
+                !isImageFlag(getEmojiFlag(selectedCountry.iso2))
+              "
+              [class.flag-image]="
+                isImageFlag(getEmojiFlag(selectedCountry.iso2))
+              "
+            >
+            </span>
           </span>
           <svg
             *ngIf="!normalizedConfig.lockCountrySelection"
@@ -108,7 +117,10 @@
           [id]="inputId"
           type="tel"
           class="phone-input"
-          [ngClass]="[normalizedConfig.inputClass, normalizedConfig.placeholderClass]"
+          [ngClass]="[
+            normalizedConfig.inputClass,
+            normalizedConfig.placeholderClass
+          ]"
           [style]="getPlaceholderStyles()"
           [value]="phoneValue"
           (input)="onPhoneInput($any($event.target).value)"
@@ -204,7 +216,14 @@
             (click)="selectCountryAndClose(country)"
             type="button"
           >
-            <span class="country-flag">{{ getEmojiFlag(country.iso2) }}</span>
+            <span class="country-flag">
+              <span
+                [innerHTML]="getEmojiFlag(country.iso2)"
+                [class.flag-emoji]="!isImageFlag(getEmojiFlag(country.iso2))"
+                [class.flag-image]="isImageFlag(getEmojiFlag(country.iso2))"
+              >
+              </span>
+            </span>
             <span class="country-name">{{ country.name }}</span>
             <span class="country-code">{{ country.dialCode }}</span>
           </button>
@@ -218,7 +237,14 @@
           (click)="selectCountryAndClose(country)"
           type="button"
         >
-          <span class="country-flag">{{ getEmojiFlag(country.iso2) }}</span>
+          <span class="country-flag">
+            <span
+              [innerHTML]="getEmojiFlag(country.iso2)"
+              [class.flag-emoji]="!isImageFlag(getEmojiFlag(country.iso2))"
+              [class.flag-image]="isImageFlag(getEmojiFlag(country.iso2))"
+            >
+            </span>
+          </span>
           <span class="country-name">{{ country.name }}</span>
           <span class="country-code">{{ country.dialCode }}</span>
         </button>

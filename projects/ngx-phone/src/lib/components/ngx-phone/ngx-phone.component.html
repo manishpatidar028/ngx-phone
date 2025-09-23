@@ -45,7 +45,13 @@
           *ngIf="normalizedConfig.showFlags && selectedCountry"
           [class]="getFlagClasses()"
         >
-          {{ getEmojiFlag(selectedCountry.iso2) }}
+          <span
+            [innerHTML]="getEmojiFlag(selectedCountry.iso2)"
+            [class.flag-emoji]="
+              !isImageFlag(getEmojiFlag(selectedCountry.iso2))
+            "
+            [class.flag-image]="isImageFlag(getEmojiFlag(selectedCountry.iso2))"
+          ></span>
         </span>
         <span class="country-code" *ngIf="normalizedConfig.showDialCode">
           {{ selectedCountry?.dialCode || "+1" }}
@@ -94,8 +100,7 @@
               [class.flag-image]="
                 isImageFlag(getEmojiFlag(selectedCountry.iso2))
               "
-            >
-            </span>
+            ></span>
           </span>
           <svg
             *ngIf="!normalizedConfig.lockCountrySelection"
@@ -159,7 +164,13 @@
           *ngIf="normalizedConfig.showFlags && selectedCountry"
           [class]="getFlagClasses()"
         >
-          {{ getEmojiFlag(selectedCountry.iso2) }}
+          <span
+            [innerHTML]="getEmojiFlag(selectedCountry.iso2)"
+            [class.flag-emoji]="
+              !isImageFlag(getEmojiFlag(selectedCountry.iso2))
+            "
+            [class.flag-image]="isImageFlag(getEmojiFlag(selectedCountry.iso2))"
+          ></span>
         </span>
         <span class="country-code" *ngIf="normalizedConfig.showDialCode">
           {{ selectedCountry?.dialCode || "+1" }}
@@ -221,8 +232,7 @@
                 [innerHTML]="getEmojiFlag(country.iso2)"
                 [class.flag-emoji]="!isImageFlag(getEmojiFlag(country.iso2))"
                 [class.flag-image]="isImageFlag(getEmojiFlag(country.iso2))"
-              >
-              </span>
+              ></span>
             </span>
             <span class="country-name">{{ country.name }}</span>
             <span class="country-code">{{ country.dialCode }}</span>
@@ -242,8 +252,7 @@
               [innerHTML]="getEmojiFlag(country.iso2)"
               [class.flag-emoji]="!isImageFlag(getEmojiFlag(country.iso2))"
               [class.flag-image]="isImageFlag(getEmojiFlag(country.iso2))"
-            >
-            </span>
+            ></span>
           </span>
           <span class="country-name">{{ country.name }}</span>
           <span class="country-code">{{ country.dialCode }}</span>

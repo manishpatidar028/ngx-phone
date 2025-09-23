@@ -2,6 +2,39 @@
    NgxPhoneComponent - Enhanced Styles
    ================================================================= */
 
+/* Enhanced country flag display with cross-platform support */
+.country-flag {
+  display: inline-block;
+  width: 1.25rem;
+  height: 0.875rem;
+  font-size: 1rem;
+  line-height: 0.875rem;
+  text-align: center;
+  border-radius: 1px;
+  flex-shrink: 0;
+  font-family: "Apple Color Emoji", /* macOS */ "Segoe UI Emoji",
+    /* Windows 10+ */ "Noto Color Emoji", /* Chrome/Android */ "Twemoji Mozilla",
+    /* Firefox */ monospace; /* Fallback */
+
+  /* Fallback styling for Windows systems without emoji support */
+  background-color: #f3f4f6;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.625rem;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  position: relative;
+}
+
+/* When emoji is supported, remove fallback styling */
+.country-flag.emoji-supported {
+  background-color: transparent;
+  color: inherit;
+  font-weight: normal;
+  font-size: 1rem;
+  border: none;
+}
+
 /* 🏗️ Host Component */
 .ngx-phone-host {
   position: relative;

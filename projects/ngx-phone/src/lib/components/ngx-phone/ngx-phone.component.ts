@@ -278,18 +278,6 @@ export class NgxPhoneComponent
     return classes;
   }
 
-  /** Get flag CSS classes */
-  getFlagClasses(): string {
-    return [
-      this.normalizedConfig.flagPosition === 'start'
-        ? 'flag-start'
-        : 'flag-end',
-      this.normalizedConfig.showInlineDivider === false ? 'no-divider' : '',
-    ]
-      .filter(Boolean)
-      .join(' ');
-  }
-
   /** Get effective placeholder text */
   getEffectivePlaceholder(): string {
     if (this.normalizedConfig.customPlaceholder && this.selectedCountry) {
@@ -989,20 +977,85 @@ export class NgxPhoneComponent
     );
   }
 
-  /** Convert ISO2 country to emoji flag */
-  getEmojiFlag(iso2: string): string {
-    if (!iso2 || iso2.length !== 2) {
-      return '🏳️'; // Default flag if invalid ISO2
-    }
+ private emojiSupport: boolean | null = null;
 
-    // Convert ISO2 code to emoji flag using Unicode regional indicator symbols
-    const codePoints = iso2
-      .toUpperCase()
-      .split('')
-      .map((char) => 127397 + char.charCodeAt(0));
-
-    return String.fromCodePoint(...codePoints);
+getCountryFlag(iso2: string): { content: string; class: string; isEmoji: boolean } {
+  if (!iso2 || iso2.length !== 2) {
+    return { 
+      content: this.hasEmojiSupport() ? '🏳️' : 'UN', 
+      class: this.hasEmojiSupport() ? 'emoji-supported' : '', 
+      isEmoji: this.hasEmojiSupport() 
+    };
   }
+
+  const emojiFlag = this.convertToEmojiFlag(iso2);
+  const fallbackText = iso2.toUpperCase();
+  const supportsEmoji = this.hasEmojiSupport();
+
+  return {
+    content: supportsEmoji ? emojiFlag : fallbackText,
+    class: supportsEmoji ? 'emoji-supported' : '',
+    isEmoji: supportsEmoji
+  };
+}
+
+private convertToEmojiFlag(iso2: string): string {
+  const codePoints = iso2
+    .toUpperCase()
+    .split('')
+    .map((char) => 127397 + char.charCodeAt(0));
+
+  return String.fromCodePoint(...codePoints);
+}
+
+private hasEmojiSupport(): boolean {
+  if (this.emojiSupport !== null) {
+    return this.emojiSupport;
+  }
+
+  if (!this.platformHelper.isBrowser) {
+    this.emojiSupport = false;
+    return false;
+  }
+
+  // Enhanced detection logic
+  const userAgent = navigator.userAgent;
+  const isWindows = /Windows/i.test(userAgent);
+  const isMac = /Mac OS X|macOS/i.test(userAgent);
+  const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+  const isAndroid = /Android/i.test(userAgent);
+  const isLinux = /Linux/i.test(userAgent) && !isAndroid;
+
+  // More reliable platform-based detection
+  if (isMac || isIOS) {
+    this.emojiSupport = true; // Mac/iOS have excellent emoji support
+  } else if (isAndroid) {
+    this.emojiSupport = true; // Android generally supports emoji flags well
+  } else if (isWindows) {
+    // Check Windows version - Windows 10+ has better emoji support
+    const isWindows10Plus = /Windows NT 10\./i.test(userAgent);
+    this.emojiSupport = isWindows10Plus;
+  } else if (isLinux) {
+    // Linux emoji support varies widely
+    this.emojiSupport = false;
+  } else {
+    this.emojiSupport = false; // Conservative fallback
+  }
+
+  return this.emojiSupport;
+}
+
+// Keep this method for backward compatibility
+getFlagClasses(): string {
+  return [
+    this.normalizedConfig.flagPosition === 'start'
+      ? 'flag-start'
+      : 'flag-end',
+    this.normalizedConfig.showInlineDivider === false ? 'no-divider' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
 
   /**
    * Toggle the visibility of the country dropdown and determine its position.

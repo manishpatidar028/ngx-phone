@@ -51,6 +51,7 @@ import {
   computeDropdownPosition,
   pickDynamicPhoneError,
 } from '../../utils/phone-number.util';
+import { SmartFlagService } from '../../services/smart-flag.service';
 
 @Component({
   selector: 'ngx-phone',
@@ -179,7 +180,7 @@ export class NgxPhoneComponent
     private validationService: PhoneValidationService,
     private cdr: ChangeDetectorRef,
     private platformHelper: PlatformHelper,
-    private zone: NgZone
+    private smartFlagService: SmartFlagService
   ) {}
 
   // -------------------------------------------------------------------
@@ -989,21 +990,6 @@ export class NgxPhoneComponent
     );
   }
 
-  /** Convert ISO2 country to emoji flag */
-  getEmojiFlag(iso2: string): string {
-    if (!iso2 || iso2.length !== 2) {
-      return '🏳️'; // Default flag if invalid ISO2
-    }
-
-    // Convert ISO2 code to emoji flag using Unicode regional indicator symbols
-    const codePoints = iso2
-      .toUpperCase()
-      .split('')
-      .map((char) => 127397 + char.charCodeAt(0));
-
-    return String.fromCodePoint(...codePoints);
-  }
-
   /**
    * Toggle the visibility of the country dropdown and determine its position.
    */
@@ -1242,5 +1228,20 @@ export class NgxPhoneComponent
       this.validationChange.emit(this.validationResult as any);
       this.cdr.markForCheck();
     }
+  }
+
+  /** Get country flag using smart detection */
+  getCountryFlag(iso2: string): string {
+    return this.smartFlagService.getFlag(iso2);
+  }
+
+  /** Legacy method - kept for backward compatibility, just delegates to smart service */
+  getEmojiFlag(iso2: string): string {
+    return this.getCountryFlag(iso2);
+  }
+
+  /** Check if current flag is an HTML image element */
+  isImageFlag(flagContent: string): boolean {
+    return flagContent.includes('<img');
   }
 }

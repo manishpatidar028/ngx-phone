@@ -532,3 +532,10 @@
   white-space: nowrap;
   border: 0;
 }
+
+.flag-img {
+  width: 20px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: 2px;
+}

@@ -3,27 +3,27 @@
    ================================================================= */
 
 /* 🏗️ Host Component */
-.ngx-phone-number-host {
+.ngx-phone-host {
   position: relative;
   display: block;
   width: 100%;
   font-family: inherit;
 }
 
-.ngx-phone-number-host.disabled {
+.ngx-phone-host.disabled {
   opacity: 0.6;
   pointer-events: none;
 }
 
 /* 📦 Main Container */
-.ngx-phone-number-container {
+.ngx-phone-container {
   position: relative;
   width: 100%;
   box-sizing: border-box;
 }
 
 /* Custom container border - opt-in only */
-.ngx-phone-number-container.custom-border {
+.ngx-phone-container.custom-border {
   border: none !important;
 }
 
@@ -445,7 +445,7 @@
 }
 
 /* 🎯 Focus States */
-.ngx-phone-number-host:focus-within .input-group:not(.has-error) {
+.ngx-phone-host:focus-within .input-group:not(.has-error) {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }

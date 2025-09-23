@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { NgxPhoneComponent } from '../lib/components/ngx-phone-number/ngx-phone-number.component';
+import { NgxPhoneComponent } from './components/ngx-phone/ngx-phone.component';
 
 @NgModule({
   imports: [NgxPhoneComponent], // Standalone component

@@ -3,23 +3,23 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "ngx-phone-number": {
+    "ngx-phone": {
       "projectType": "library",
-      "root": "projects/ngx-phone-number",
-      "sourceRoot": "projects/ngx-phone-number/src",
+      "root": "projects/ngx-phone",
+      "sourceRoot": "projects/ngx-phone/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "project": "projects/ngx-phone-number/ng-package.json"
+            "project": "projects/ngx-phone/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/ngx-phone-number/tsconfig.lib.prod.json"
+              "tsConfig": "projects/ngx-phone/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/ngx-phone-number/tsconfig.lib.json"
+              "tsConfig": "projects/ngx-phone/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -27,7 +27,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "tsConfig": "projects/ngx-phone-number/tsconfig.spec.json",
+            "tsConfig": "projects/ngx-phone/tsconfig.spec.json",
             "polyfills": ["zone.js", "zone.js/testing"]
           }
         }

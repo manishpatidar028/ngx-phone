@@ -1,12 +1,12 @@
 /*
- * Public API Surface of ngx-phone-number
+ * Public API Surface of ngx-phone
  */
 
 // 📦 Module
 export * from './lib/ngx-phone.module';
 
 // 🧩 Component
-export * from './lib/components/ngx-phone-number/ngx-phone-number.component';
+export * from './lib/components/ngx-phone/ngx-phone.component';
 
 // 🛠️ Services
 export * from './lib/services/country.service';

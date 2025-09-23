@@ -49,10 +49,6 @@ import {
   extractNationalNumber as extractNationalNumberUtil,
   rewriteWithNewDialCode as rewriteWithNewDialCodeUtil,
   computeDropdownPosition,
-  isoToEmojiFlag,
-  mapValueForControl,
-  resolvePreferredCountryByDialCode,
-  maybeFormatNumber,
   pickDynamicPhoneError,
 } from '../../utils/phone-number.util';
 
@@ -60,8 +56,8 @@ import {
   selector: 'ngx-phone',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './ngx-phone-number.component.html',
-  styleUrls: ['./ngx-phone-number.component.css'],
+  templateUrl: './ngx-phone.component.html',
+  styleUrls: ['./ngx-phone.component.css'],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -115,7 +111,7 @@ export class NgxPhoneComponent
   // -------------------------------------------------------------------
   // Host Bindings (Styling Hooks)
   // -------------------------------------------------------------------
-  @HostBinding('class.ngx-phone-number-host') hostClass = true;
+  @HostBinding('class.ngx-phone-host') hostClass = true;
   @HostBinding('class.disabled') get isDisabled() {
     return this.disabled;
   }

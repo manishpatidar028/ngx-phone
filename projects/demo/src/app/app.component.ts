@@ -9,7 +9,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { NgForm } from '@angular/forms';
-import { Country, NgxPhoneModule, PhoneInputConfig, PhoneNumberValue, ValidationError, ValidationResult } from '../../../ngx-phone-number/src/public-api';
+import { Country, NgxPhoneModule, PhoneInputConfig, PhoneNumberValue, ValidationError, ValidationResult } from 'ngx-phone';
 
 @Component({
   selector: 'demo-app',

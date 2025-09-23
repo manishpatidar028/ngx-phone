@@ -769,7 +769,7 @@ MIT License - Free for personal & commercial use
 
 If this library helps your project, please consider:
 
-- ⭐ Starring the repo on [GitHub](https://github.com/manishpatidar028/ngx-phone)
+- ⭐ Starring the repo on [GitHub](https://github.com/manishpatidar028/ngx-phone-number)
 - 🐛 Reporting issues and feature requests
 - 📖 Contributing to documentation
 - 💡 Sharing your use cases and feedback

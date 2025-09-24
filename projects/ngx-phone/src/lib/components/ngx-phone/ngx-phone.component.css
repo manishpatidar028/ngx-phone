@@ -321,7 +321,7 @@
 
 /* 📋 Country List */
 .country-list {
-  max-height: 250px;
+  max-height: 190px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #d1d5db transparent;

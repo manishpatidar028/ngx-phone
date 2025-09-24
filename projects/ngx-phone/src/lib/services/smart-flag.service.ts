@@ -104,8 +104,7 @@ export class SmartFlagService {
              class="flag-img"
              style="width:20px;height:15px;object-fit:cover;"
              loading="lazy"
-             onerror="this.style.display='none';this.nextElementSibling.style.display='inline';">
-            <span style="display:none;font-size:0.8em;opacity:0.7;">${iso2}</span>`;
+             onerror="this.style.display='none';this.nextElementSibling.style.display='inline';">`;
   }
 
   /**

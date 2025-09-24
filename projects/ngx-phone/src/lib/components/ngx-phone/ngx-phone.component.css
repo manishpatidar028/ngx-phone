@@ -156,7 +156,7 @@
   border: none;
   cursor: pointer;
   color: #6b7280;
-  gap: 2px;
+  gap: 8px;
   transition: all 0.2s ease-in-out;
   flex-shrink: 0;
   position: relative;

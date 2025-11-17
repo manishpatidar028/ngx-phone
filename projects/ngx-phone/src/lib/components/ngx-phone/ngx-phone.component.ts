@@ -43,6 +43,8 @@ import { PlatformHelper } from '../../utils/platform.util';
 import {
   normalizePhoneConfig,
   NormalizedPhoneConfig,
+  shouldFormatOnPatch,
+  shouldValidateOnPatch,
 } from '../../utils/phone-config.util';
 import {
   shouldDetectCountryFromInput as shouldDetectFromInputUtil,
@@ -55,7 +57,7 @@ import { SmartFlagService } from '../../services/smart-flag.service';
 
 /**
  * NgxPhoneComponent - Advanced phone number input component
- * 
+ *
  * A comprehensive Angular component for international phone number input with:
  * - Real-time validation using libphonenumber-js
  * - Country detection from input
@@ -63,7 +65,7 @@ import { SmartFlagService } from '../../services/smart-flag.service';
  * - Reactive and template-driven forms support
  * - Accessibility features
  * - Smart flag rendering
- * 
+ *
  * @example
  * ```html
  * <ngx-phone
@@ -114,64 +116,64 @@ export class NgxPhoneComponent
   // ===================================================================
   // Component Inputs - Configuration and state from parent
   // ===================================================================
-  
+
   /** Component configuration object */
   @Input() config: PhoneInputConfig = {};
-  
+
   /** Reference to parent FormControl for reactive forms */
   @Input() public formControls!: AbstractControl | null;
-  
+
   /** Whether the input is disabled */
   @Input() disabled = false;
-  
+
   /** Whether the input is required */
   @Input() required = false;
-  
+
   /** Whether the input is read-only */
   @Input() readonly = false;
-  
+
   /** Custom validation functions */
   @Input() customValidators: PhoneCustomValidator[] = [];
 
   // ===================================================================
   // Component Outputs - Events emitted to parent
   // ===================================================================
-  
+
   /** Emitted when country selection changes */
   @Output() countryChange = new EventEmitter<Country>();
-  
+
   /** Emitted when phone number value changes */
   @Output() numberChange = new EventEmitter<PhoneNumberValue | null>();
-  
+
   /** Emitted when validation result changes */
   @Output() validationChange = new EventEmitter<ValidationResult>();
-  
+
   /** Emitted when input loses focus */
   @Output() blur = new EventEmitter<void>();
-  
+
   /** Emitted when input gains focus */
   @Output() focus = new EventEmitter<void>();
-  
+
   /** Emitted when Enter key is pressed */
   @Output() enter = new EventEmitter<void>();
 
   // ===================================================================
   // Host Bindings - CSS classes applied to component host element
   // ===================================================================
-  
+
   /** Main component CSS class */
   @HostBinding('class.ngx-phone-host') hostClass = true;
-  
+
   /** Disabled state CSS class */
   @HostBinding('class.disabled') get isDisabled() {
     return this.disabled;
   }
-  
+
   /** Focused state CSS class */
   @HostBinding('class.focused') get isFocusedClass() {
     return this.isFocused;
   }
-  
+
   /** Error state CSS class */
   @HostBinding('class.has-error') get hasError() {
     return this.shouldShowError() && this.normalizedConfig.showInvalidBorder;
@@ -180,23 +182,23 @@ export class NgxPhoneComponent
   // ===================================================================
   // Component State - Internal data and flags
   // ===================================================================
-  
+
   /** Current phone number value as string */
   phoneValue = '';
-  
+
   /** Currently selected country */
   selectedCountry: Country | null = null;
-  
+
   /** Parsed phone number object */
   phoneNumberValue: PhoneNumberValue | null = null;
-  
+
   /** Current validation result */
   validationResult: ValidationResult | null = null;
 
   /** Validation state flags */
   isValid = false;
   isPossible = false;
-  
+
   /** UI interaction state flags */
   isFocused = false;
   isCountryLocked = false;
@@ -227,13 +229,13 @@ export class NgxPhoneComponent
   // ===================================================================
   // RxJS Streams - Reactive programming streams
   // ===================================================================
-  
+
   /** Cleanup stream for subscriptions */
   private destroy$ = new Subject<void>();
-  
+
   /** Phone input debouncing stream */
   private phoneInput$ = new Subject<string>();
-  
+
   /** Search input debouncing stream */
   private searchInput$ = new Subject<string>();
 
@@ -277,7 +279,7 @@ export class NgxPhoneComponent
     this.loadCountries();
     this.setInitialCountry();
     this.setupSubscriptions();
-    
+
     if (this.formControls) {
       this.formControls.statusChanges
         .pipe(takeUntil(this.destroy$))
@@ -655,6 +657,19 @@ export class NgxPhoneComponent
         }
       }
     }
+    if (detected) {
+      const isCountryAllowed = this.isCountryAllowedWithDialCodeRelaxation(
+        detected.iso2,
+        value
+      );
+
+      if (!isCountryAllowed) {
+        // Don't change the flag - keep current selection or default
+        // But still validate to show error
+        this.validateNumber();
+        return;
+      }
+    }
 
     if (detected && detected.iso2 !== this.selectedCountry?.iso2) {
       this.selectCountry(detected, false, false, false);
@@ -865,12 +880,19 @@ export class NgxPhoneComponent
       }
     }
 
+    const onlyCountries =
+      this.normalizedConfig.onlyCountries &&
+      this.normalizedConfig.onlyCountries.length > 0
+        ? this.normalizedConfig.onlyCountries
+        : undefined;
+
     // Libphonenumber validation
     this.validationResult = this.validationService.validate(
       this.phoneValue,
       this.selectedCountry?.iso2,
       this.normalizedConfig.errorMessages,
-      []
+      [],
+      onlyCountries // 🆕 NEW parameter
     );
 
     this.isValid = this.validationResult.isValid;
@@ -913,7 +935,7 @@ export class NgxPhoneComponent
         this.phoneValue,
         this.selectedCountry?.iso2
       );
-      
+
       // Emit value based on configured valueMode
       const valueToEmit = this.getValueByMode();
       this.onChange(valueToEmit);
@@ -950,23 +972,23 @@ export class NgxPhoneComponent
           return {
             raw: rawValue,
             isValid: false,
-            isPossible: false
+            isPossible: false,
           };
         }
         return null;
-      
+
       case 'e164':
         return phoneNumber?.e164 || rawValue;
-      
+
       case 'international':
         return phoneNumber?.international || rawValue;
-      
+
       case 'national':
         return phoneNumber?.national || rawValue;
-      
+
       case 'raw':
         return rawValue;
-      
+
       case 'string':
       default:
         return phoneNumber?.international || rawValue;
@@ -1019,33 +1041,41 @@ export class NgxPhoneComponent
           }
         }
 
-        if (
-          detectedCountry &&
-          detectedCountry.iso2 !== this.selectedCountry?.iso2
-        ) {
-          this.selectedCountry = detectedCountry;
-          this.countryChange.emit(detectedCountry);
+        if (detectedCountry) {
+          const isAllowed = this.isCountryAllowedWithDialCodeRelaxation(
+            detectedCountry.iso2,
+            value
+          );
 
-          // Apply formatting for detected country
-          const digits = value.replace(/\D/g, '');
-          if (digits.length >= 2) {
-            try {
-              const formatted = this.validationService.formatAsYouType(
-                value,
-                detectedCountry.iso2
-              );
-              if (formatted && formatted !== value) {
-                this.phoneValue = formatted;
-                if (this.phoneInputRef?.nativeElement) {
-                  this.phoneInputRef.nativeElement.value = formatted;
+          if (
+            isAllowed &&
+            detectedCountry.iso2 !== this.selectedCountry?.iso2
+          ) {
+            // ✅ Country is allowed - change flag and format
+            this.selectedCountry = detectedCountry;
+            this.countryChange.emit(detectedCountry);
+
+            // Apply formatting for detected country
+            const digits = value.replace(/\D/g, '');
+            if (digits.length >= 2) {
+              try {
+                const formatted = this.validationService.formatAsYouType(
+                  value,
+                  detectedCountry.iso2
+                );
+                if (formatted && formatted !== value) {
+                  this.phoneValue = formatted;
+                  if (this.phoneInputRef?.nativeElement) {
+                    this.phoneInputRef.nativeElement.value = formatted;
+                  }
                 }
+              } catch (error) {
+                // Keep original value on error
               }
-            } catch (error) {
-              // Keep original value on error
             }
-          }
 
-          this.cdr.detectChanges();
+            this.cdr.detectChanges();
+          }
         }
       }
     } else if (this.selectedCountry && !value.startsWith('+')) {
@@ -1102,10 +1132,6 @@ export class NgxPhoneComponent
   // ControlValueAccessor Implementation
   // ===================================================================
 
-  /**
-   * Write value from parent component or form control
-   * Handles different value formats based on valueMode configuration
-   */
   writeValue(value: any): void {
     if (!value) {
       this.phoneValue = '';
@@ -1128,34 +1154,295 @@ export class NgxPhoneComponent
       return;
     }
 
+    // ✅✅✅ CRITICAL FIX: Reset manual selection flags when patching ✅✅✅
+    // This allows country detection to work properly even after manual selection
+    this.isCountryLocked = false;
+    this.isManualCountrySelection = false;
+
     // Handle different value types based on valueMode
     if (typeof value === 'string') {
-      this.phoneValue = value;
-      const country = this.validationService.extractCountry(value);
-      if (country) {
-        this.selectCountry(country, false, false, false);
-      }
+      this.handleStringValuePatch(value);
     } else if (typeof value === 'object' && value !== null) {
-      // Handle PhoneNumberValue object
-      this.phoneValue = this.extractDisplayValueFromObject(value);
-      
-      if (value.country) {
-        this.selectCountry(value.country, false, false, false);
-      } else if (value.countryCode) {
-        const country = this.countryService.getCountryByIso2(value.countryCode);
-        if (country) this.selectCountry(country, false, false, false);
-      } else if (value.e164 || value.international) {
-        // Try to detect country from the phone number
-        const numberToAnalyze = value.e164 || value.international || value.raw;
-        const country = this.validationService.extractCountry(numberToAnalyze);
-        if (country) {
-          this.selectCountry(country, false, false, false);
-        }
-      }
+      this.handleObjectValuePatch(value);
     }
 
     if (this.phoneInputRef?.nativeElement) {
       this.phoneInputRef.nativeElement.value = this.phoneValue;
+    }
+
+    // Validate if configured
+    if (shouldValidateOnPatch(this.normalizedConfig)) {
+      this.validateNumber();
+    }
+
+    // Mark as touched if configured
+    if (this.normalizedConfig.markAsTouchedOnPatch) {
+      this.hasUserInteracted = true;
+      this.hasBeenFocused = true;
+      this.onTouched();
+    }
+
+    // Force error display if configured
+    if (this.normalizedConfig.showErrorsOnPatch && !this.isValid) {
+      this.hasShownError = true;
+      this.cdr.markForCheck();
+    }
+  }
+
+  /**
+   * 🆕 Handle string value patching with intelligent country detection
+   */
+  private handleStringValuePatch(value: string): void {
+    const trimmedValue = value.trim();
+    if (!trimmedValue) {
+      this.phoneValue = '';
+      return;
+    }
+
+    // Step 1: Normalize and detect country
+    const normalized = this.normalizePhoneInput(trimmedValue);
+    let detectedCountry = this.detectCountryFromValue(normalized);
+
+    // Step 2: If no country detected, use default country
+    if (!detectedCountry && this.normalizedConfig.defaultCountry) {
+      detectedCountry = this.countryService.getCountryByIso2(
+        this.normalizedConfig.defaultCountry
+      );
+    }
+
+    // Step 3: Set the country and emit change event
+    if (detectedCountry) {
+      const previousCountry = this.selectedCountry;
+      this.selectCountry(detectedCountry, false, false, false);
+
+      // 🆕 Emit country change event if country changed
+      if (previousCountry?.iso2 !== detectedCountry.iso2) {
+        this.countryChange.emit(detectedCountry);
+        // 🆕 Trigger change detection to update flag in UI
+        this.cdr.markForCheck();
+      }
+    }
+
+    // Step 4: Build the complete phone number with dial code
+    const completeNumber = this.buildCompletePhoneNumber(
+      normalized,
+      detectedCountry
+    );
+
+    // Step 5: Format if enabled
+    if (shouldFormatOnPatch(this.normalizedConfig) && this.selectedCountry) {
+      try {
+        const formatted = this.validationService.formatAsYouType(
+          completeNumber,
+          this.selectedCountry.iso2
+        );
+
+        // Decide whether to show dial code based on config
+        this.phoneValue = this.applyDialCodeDisplay(
+          formatted,
+          this.selectedCountry.dialCode
+        );
+      } catch {
+        this.phoneValue = completeNumber;
+      }
+    } else {
+      this.phoneValue = completeNumber;
+    }
+  }
+
+  /**
+   * 🆕 Normalize phone input - clean but preserve international indicator
+   */
+  private normalizePhoneInput(value: string): string {
+    // Remove all whitespace and formatting characters except +
+    let normalized = value.replace(/[\s\-\(\)\.]/g, '');
+
+    // If starts with + keep it, otherwise remove any leading +
+    if (!normalized.startsWith('+')) {
+      normalized = normalized.replace(/\+/g, '');
+    }
+
+    return normalized;
+  }
+
+  /**
+   * 🆕 Detect country from various phone number formats
+   */
+  private detectCountryFromValue(normalized: string): Country | undefined {
+    // Case 1: Starts with + (international format)
+    if (normalized.startsWith('+')) {
+      let detected = this.validationService.extractCountry(normalized);
+
+      // Apply dial code preferences
+      if (detected && this.normalizedConfig.dialCodeCountryPreference) {
+        const dialCodeNumber = detected.dialCode.replace('+', '');
+        const preferredIso =
+          this.normalizedConfig.dialCodeCountryPreference[dialCodeNumber];
+
+        if (preferredIso) {
+          const preferredCountry =
+            this.countryService.getCountryByIso2(preferredIso);
+          if (preferredCountry) {
+            detected = preferredCountry;
+          }
+        }
+      }
+
+      return detected;
+    }
+
+    // Case 2: Starts with country code digits (e.g., "1704..." for US)
+    // Try to detect by adding + and checking
+    const withPlus = '+' + normalized;
+    let detected = this.validationService.extractCountry(withPlus);
+
+    if (detected) {
+      // Verify it's a valid match by checking digit length expectations
+      const digitsAfterDialCode = normalized.substring(
+        detected.dialCode.length - 1 // -1 because dialCode includes +
+      );
+
+      // If we have reasonable digits after dial code, it's likely correct
+      if (digitsAfterDialCode.length >= 6) {
+        // Apply preferences
+        if (this.normalizedConfig.dialCodeCountryPreference) {
+          const dialCodeNumber = detected.dialCode.replace('+', '');
+          const preferredIso =
+            this.normalizedConfig.dialCodeCountryPreference[dialCodeNumber];
+
+          if (preferredIso) {
+            const preferredCountry =
+              this.countryService.getCountryByIso2(preferredIso);
+            if (preferredCountry) {
+              detected = preferredCountry;
+            }
+          }
+        }
+
+        return detected;
+      }
+    }
+
+    // Case 3: National format - no country code
+    // Will use default country
+    return undefined;
+  }
+
+  /**
+   * 🆕 Build complete phone number with proper dial code
+   */
+  private buildCompletePhoneNumber(
+    normalized: string,
+    country: Country | undefined
+  ): string {
+    if (!country) {
+      return normalized;
+    }
+
+    // Already has + prefix
+    if (normalized.startsWith('+')) {
+      return normalized;
+    }
+
+    // Extract dial code digits (without +)
+    const dialCodeDigits = country.dialCode.replace('+', '');
+
+    // Check if number already starts with dial code
+    if (normalized.startsWith(dialCodeDigits)) {
+      // Add + prefix
+      return '+' + normalized;
+    }
+
+    // National format - prepend dial code
+    return `${country.dialCode} ${normalized}`;
+  }
+
+  /**
+   * 🆕 Apply dial code display based on configuration
+   */
+  private applyDialCodeDisplay(
+    formattedNumber: string,
+    dialCode: string
+  ): string {
+    const shouldShowDialCode =
+      this.normalizedConfig.showCountryCodeInInput ||
+      this.normalizedConfig.separateCountrySelector;
+
+    if (shouldShowDialCode) {
+      // Keep dial code
+      return formattedNumber;
+    } else {
+      // Remove dial code for national display
+      if (formattedNumber.includes(dialCode)) {
+        return formattedNumber.replace(dialCode, '').trim();
+      }
+      return formattedNumber;
+    }
+  }
+
+  /**
+   * 🆕 Handle object value patching
+   */
+  private handleObjectValuePatch(value: any): void {
+    this.phoneValue = this.extractDisplayValueFromObject(value);
+
+    let countryChanged = false;
+    const previousCountry = this.selectedCountry;
+
+    // Priority 1: Explicit country object
+    if (value.country) {
+      this.selectCountry(value.country, false, false, false);
+      countryChanged = previousCountry?.iso2 !== value.country?.iso2;
+    }
+    // Priority 2: Country code (ISO2)
+    else if (value.countryCode) {
+      const country = this.countryService.getCountryByIso2(value.countryCode);
+      if (country) {
+        this.selectCountry(country, false, false, false);
+        countryChanged = previousCountry?.iso2 !== country.iso2;
+      }
+    }
+    // Priority 3: Detect from phone number
+    else if (value.e164 || value.international || value.raw) {
+      const numberToAnalyze = value.e164 || value.international || value.raw;
+      const country = this.validationService.extractCountry(numberToAnalyze);
+      if (country) {
+        this.selectCountry(country, false, false, false);
+        countryChanged = previousCountry?.iso2 !== country.iso2;
+      }
+    }
+
+    // 🆕 Emit country change event if country changed
+    if (countryChanged && this.selectedCountry) {
+      this.countryChange.emit(this.selectedCountry);
+      this.cdr.markForCheck();
+    }
+
+    // Apply formatting for object values
+    if (
+      shouldFormatOnPatch(this.normalizedConfig) &&
+      this.selectedCountry &&
+      this.phoneValue &&
+      !value.formatted
+    ) {
+      try {
+        const completeNumber = this.buildCompletePhoneNumber(
+          this.phoneValue,
+          this.selectedCountry
+        );
+
+        const formatted = this.validationService.formatAsYouType(
+          completeNumber,
+          this.selectedCountry.iso2
+        );
+
+        this.phoneValue = this.applyDialCodeDisplay(
+          formatted,
+          this.selectedCountry.dialCode
+        );
+      } catch {
+        // Keep original value on error
+      }
     }
   }
 
@@ -1169,7 +1456,7 @@ export class NgxPhoneComponent
     if (value.national) return value.national;
     if (value.e164) return value.e164;
     if (value.raw) return value.raw;
-    
+
     return '';
   }
 
@@ -1248,11 +1535,11 @@ export class NgxPhoneComponent
    */
   validate(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
-    
+
     // Handle different value types based on valueMode
     let isEmpty = false;
     let phoneStringToValidate = '';
-    
+
     if (!value) {
       isEmpty = true;
     } else if (typeof value === 'string') {
@@ -1286,12 +1573,19 @@ export class NgxPhoneComponent
       }
     }
 
+    const onlyCountries =
+      this.normalizedConfig.onlyCountries &&
+      this.normalizedConfig.onlyCountries.length > 0
+        ? this.normalizedConfig.onlyCountries
+        : undefined;
+
     // Component validation - use the phone string, not the object
     const result = this.validationService.validate(
       phoneStringToValidate,
       this.selectedCountry?.iso2,
       this.normalizedConfig.errorMessages,
-      []
+      [],
+      onlyCountries
     );
 
     if (!result.isValid && result.error) {
@@ -1402,6 +1696,17 @@ export class NgxPhoneComponent
    * Always treated as manual selection
    */
   selectCountryAndClose(country: Country): void {
+    if (!this.isCountryInAllowedList(country.iso2)) {
+      // Optionally show a toast/notification here
+      console.warn(`Country ${country.name} is not in the allowed list`);
+
+      // Close dropdown without changing selection
+      if (this.normalizedConfig.closeOnSelect) {
+        this.closeDropdown();
+      }
+      return;
+    }
+
     this.selectCountry(
       country,
       true,
@@ -1574,5 +1879,69 @@ export class NgxPhoneComponent
    */
   isImageFlag(flagContent: string): boolean {
     return flagContent.includes('<img');
+  }
+
+  /**
+   * 🆕 NEW: Check if country is in the allowed list
+   */
+  private isCountryInAllowedList(countryIso: string): boolean {
+    const onlyCountries = this.normalizedConfig.onlyCountries;
+
+    // If no restrictions, all countries are allowed
+    if (!onlyCountries || onlyCountries.length === 0) {
+      return true;
+    }
+
+    return onlyCountries
+      .map((c) => c.toUpperCase())
+      .includes(countryIso.toUpperCase());
+  }
+
+  /**
+   * 🆕 Check if country is allowed with dial code relaxation
+   * If ANY country sharing the same dial code is in onlyCountries, allow ALL countries with that dial code
+   */
+  private isCountryAllowedWithDialCodeRelaxation(
+    detectedCountryIso: string,
+    phoneNumber: string
+  ): boolean {
+    const onlyCountries = this.normalizedConfig.onlyCountries;
+
+    // If no restrictions, all countries are allowed
+    if (!onlyCountries || onlyCountries.length === 0) {
+      return true;
+    }
+
+    // Direct match - country is explicitly allowed
+    if (
+      onlyCountries
+        .map((c) => c.toUpperCase())
+        .includes(detectedCountryIso.toUpperCase())
+    ) {
+      return true;
+    }
+
+    // Get the detected country to find its dial code
+    const detectedCountry =
+      this.countryService.getCountryByIso2(detectedCountryIso);
+    if (!detectedCountry) {
+      return false;
+    }
+
+    // Find all countries that share this dial code
+    const countriesWithSameDialCode =
+      this.countryService.getCountriesWithSameDialCode(
+        detectedCountry.dialCode
+      );
+
+    // Check if ANY of these countries is in onlyCountries
+    const hasAllowedCountryWithSameDialCode = countriesWithSameDialCode.some(
+      (country) =>
+        onlyCountries
+          .map((c) => c.toUpperCase())
+          .includes(country.iso2.toUpperCase())
+    );
+
+    return hasAllowedCountryWithSameDialCode;
   }
 }

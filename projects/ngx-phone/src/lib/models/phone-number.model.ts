@@ -113,6 +113,13 @@ export interface PhoneInputConfig {
   closeOnSelect?: boolean;
   dropdownPosition?: 'auto' | 'top' | 'bottom';
 
+  // 🆕 Patch behavior configuration
+  validateOnPatch?: boolean;           // Validate immediately when value is patched
+  markAsTouchedOnPatch?: boolean;      // Mark control as touched on patch
+  showErrorsOnPatch?: boolean;         // Show validation errors immediately on patch
+  formatOnPatch?: boolean;             // Apply formatting when patching (respects autoFormat)
+
+
   // 🧠 Custom logic hooks
   customPlaceholder?: (country: Country) => string;
   customFormat?: (phoneNumber: string, country: Country) => string;

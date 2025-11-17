@@ -318,3 +318,23 @@ export function pickDynamicPhoneError(
 
   return null;
 }
+
+/**
+ * Check if detected country is in the allowed countries list
+ */
+export function isCountryAllowed(
+  detectedCountryIso: string | undefined,
+  onlyCountries: string[] | undefined
+): boolean {
+  if (!onlyCountries || onlyCountries.length === 0) {
+    return true; // No restrictions
+  }
+  
+  if (!detectedCountryIso) {
+    return false; // Country couldn't be detected
+  }
+  
+  return onlyCountries
+    .map(c => c.toUpperCase())
+    .includes(detectedCountryIso.toUpperCase());
+}

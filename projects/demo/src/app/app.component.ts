@@ -60,6 +60,7 @@ export class DemoAppComponent implements OnInit {
     showInlineDivider: false,
     // Basic Settings
     defaultCountry: 'US',
+    onlyCountries:['US', 'IN'],
     autoFormat: true,
     showFlags: true,
     flagPosition: 'start',
@@ -266,6 +267,12 @@ export class DemoAppComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeForms();
+    setTimeout(() => {
+      this.reactiveForm.patchValue({
+        phoneReactive: '+1(801) 448-6702',
+      })
+    }, 5000);
+    
   }
 
   private initializeForms(): void {

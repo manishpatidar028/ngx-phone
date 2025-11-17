@@ -88,7 +88,8 @@ export class PhoneValidationService {
     phoneNumber: string,
     countryCode?: string,
     customMessages?: Partial<Record<ValidationError['type'], string>>,
-    customValidators?: PhoneCustomValidator[] // ✅ new param
+    customValidators?: PhoneCustomValidator[], // ✅ new param
+    onlyCountries?: string[]
   ): ValidationResult {
     if (
       !phoneNumber ||
@@ -104,7 +105,47 @@ export class PhoneValidationService {
       };
     }
 
+    const trimmed = phoneNumber.trim();
+
     try {
+      if (onlyCountries && onlyCountries.length > 0) {
+        const hasInternationalPrefix = trimmed.startsWith('+');
+        const digitCount = trimmed.replace(/\D/g, '').length;
+
+        // Only check if:
+        // - Starts with + (explicit international format)
+        // - OR has 7+ digits (likely complete enough to validate)
+        const shouldCheckCountry = hasInternationalPrefix || digitCount >= 7;
+
+        if (shouldCheckCountry) {
+          const detectedCountry = this.extractCountry(trimmed);
+          const detectedIso = detectedCountry?.iso2;
+
+          // Only validate if we successfully detected a country
+          if (detectedIso) {
+            const isAllowed = this.isCountryAllowedWithDialCodeRelaxation(
+              detectedIso,
+              detectedCountry.dialCode,
+              onlyCountries
+            );
+
+            if (!isAllowed) {
+              return {
+                isValid: false,
+                isPossible: false,
+                error: {
+                  type: 'COUNTRY_NOT_ALLOWED',
+                  message: this.getErrorMessage(
+                    'COUNTRY_NOT_ALLOWED',
+                    customMessages
+                  ),
+                },
+              };
+            }
+          }
+        }
+      }
+
       const isValid = countryCode
         ? isValidPhoneNumber(phoneNumber, countryCode as CountryCode)
         : isValidPhoneNumber(phoneNumber);
@@ -420,8 +461,37 @@ export class PhoneValidationService {
       TOO_LONG: 'Phone number is too long.',
       INVALID: 'Invalid phone number.',
       NOT_A_NUMBER: 'Input is not a valid number.',
+      COUNTRY_NOT_ALLOWED: 'This country is not allowed.',
     };
 
     return customMessages?.[type] || defaults[type] || 'Invalid phone number';
+  }
+  /**
+   * 🆕 Check if country is allowed with dial code relaxation
+   */
+  private isCountryAllowedWithDialCodeRelaxation(
+    detectedCountryIso: string,
+    dialCode: string,
+    onlyCountries: string[]
+  ): boolean {
+    // Direct match
+    if (
+      onlyCountries
+        .map((c) => c.toUpperCase())
+        .includes(detectedCountryIso.toUpperCase())
+    ) {
+      return true;
+    }
+
+    // Find all countries with same dial code
+    const countriesWithSameDialCode =
+      this.countryService.getCountriesWithSameDialCode(dialCode);
+
+    // Check if any country with same dial code is allowed
+    return countriesWithSameDialCode.some((country) =>
+      onlyCountries
+        .map((c) => c.toUpperCase())
+        .includes(country.iso2.toUpperCase())
+    );
   }
 }

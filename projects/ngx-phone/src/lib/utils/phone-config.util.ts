@@ -83,6 +83,10 @@ const DEFAULT_CONFIG: Omit<
   dropdownMaxHeight: '300px',
   closeOnSelect: true,
   dropdownPosition: 'auto',
+  validateOnPatch: true,
+  formatOnPatch: true,
+  markAsTouchedOnPatch: true,
+  showErrorsOnPatch: true,
 } as const;
 
 /**
@@ -255,3 +259,18 @@ export function shouldApplyCustomStyles(
     Object.keys(config.containerBorderStyle).length > 0
   );
 }
+
+/**
+ * 🆕 Helper to determine if validation should run on patch
+ */
+export function shouldValidateOnPatch(config: NormalizedPhoneConfig): boolean {
+  return config.validateOnPatch || config.showErrorsOnPatch;
+}
+
+/**
+ * 🆕 Helper to determine if formatting should be applied on patch
+ */
+export function shouldFormatOnPatch(config: NormalizedPhoneConfig): boolean {
+  return config.formatOnPatch && config.autoFormat;
+}
+

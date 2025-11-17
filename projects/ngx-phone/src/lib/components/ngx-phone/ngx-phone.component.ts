@@ -1132,6 +1132,11 @@ export class NgxPhoneComponent
   // ControlValueAccessor Implementation
   // ===================================================================
 
+  /**
+   * Write value from parent component or form control
+   * Handles different value formats based on valueMode configuration
+   * 🆕 Intelligently handles various phone number formats on patch
+   */
   writeValue(value: any): void {
     if (!value) {
       this.phoneValue = '';
@@ -1154,8 +1159,7 @@ export class NgxPhoneComponent
       return;
     }
 
-    // ✅✅✅ CRITICAL FIX: Reset manual selection flags when patching ✅✅✅
-    // This allows country detection to work properly even after manual selection
+    // 🆕 CRITICAL FIX: Reset manual selection flags when patching
     this.isCountryLocked = false;
     this.isManualCountrySelection = false;
 
@@ -1169,6 +1173,10 @@ export class NgxPhoneComponent
     if (this.phoneInputRef?.nativeElement) {
       this.phoneInputRef.nativeElement.value = this.phoneValue;
     }
+
+    // 🆕 CRITICAL: Update form control value with formatted value
+    // This ensures the form control has the formatted value, not the raw input
+    this.emitValue();
 
     // Validate if configured
     if (shouldValidateOnPatch(this.normalizedConfig)) {

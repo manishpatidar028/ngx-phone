@@ -208,8 +208,9 @@
   border: none !important;
 }
 
-.input-container.has-error:not(.custom-border) {
-  border-color: #ef4444;
+.input-container.has-error {
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* 📱 Phone Input */
@@ -538,4 +539,10 @@
   height: 15px;
   object-fit: cover;
   border-radius: 2px;
+}
+
+/* Prevent custom container border when there is an error */
+.ngx-phone-container.has-error {
+  border: none !important;
+  box-shadow: none !important;
 }

@@ -330,7 +330,9 @@ export class NgxPhoneComponent
    */
   getContainerStyles(): { [key: string]: string } {
     const styles: { [key: string]: string } = {};
-
+    if (this.hasError) {
+      return {};
+    }
     if (
       this.normalizedConfig.customContainerBorder &&
       this.normalizedConfig.containerBorderStyle

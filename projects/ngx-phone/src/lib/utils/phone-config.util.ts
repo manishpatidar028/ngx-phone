@@ -1,13 +1,28 @@
-import { PhoneInputConfig } from '../models/phone-number.model';
+import { PhoneClassMap, PhoneInputConfig } from '../models/phone-number.model';
+
+export const DEFAULT_PHONE_CLASSES: PhoneClassMap = {
+  container: 'ngx-phone-container',
+  label: 'phone-input-label',
+  inputGroup: 'input-group',
+  inputContainer: 'input-container',
+  phoneInput: 'phone-input',
+  countryButton: 'country-selector-btn',
+  flagTrigger: 'flag-trigger',
+  dropdown: 'country-dropdown',
+  searchInput: 'search-input',
+  countryItem: 'country-item',
+  errorMessage: 'error-message',
+};
+
+type RequiredConfig = Required<
+  Omit<PhoneInputConfig, 'customPlaceholder' | 'customFormat'>
+>;
 
 /**
  * Default configuration for phone input component
  * Note: Function properties like customPlaceholder and customFormat are optional
  */
-const DEFAULT_CONFIG: Omit<
-  Required<PhoneInputConfig>,
-  'customPlaceholder' | 'customFormat'
-> = {
+const DEFAULT_CONFIG: RequiredConfig = {
   // Country selection
   defaultCountry: 'US',
   preferredCountries: [],
@@ -87,7 +102,8 @@ const DEFAULT_CONFIG: Omit<
   formatOnPatch: true,
   markAsTouchedOnPatch: true,
   showErrorsOnPatch: true,
-} as const;
+  classNames: DEFAULT_PHONE_CLASSES,
+};
 
 /**
  * Internal normalized config type that properly handles optional functions
@@ -178,6 +194,11 @@ export function normalizePhoneConfig(
     normalized.showErrorsOn = 'dirty';
   }
 
+  // Class names
+  normalized.classNames = {
+    ...DEFAULT_PHONE_CLASSES,
+    ...(config.classNames || {}),
+  };
   return normalized;
 }
 
@@ -273,4 +294,3 @@ export function shouldValidateOnPatch(config: NormalizedPhoneConfig): boolean {
 export function shouldFormatOnPatch(config: NormalizedPhoneConfig): boolean {
   return config.formatOnPatch && config.autoFormat;
 }
-

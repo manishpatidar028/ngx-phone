@@ -96,6 +96,7 @@ export interface PhoneInputConfig {
   errorClass?: string;
   customContainerBorder?: boolean;
   containerBorderStyle?: { [key: string]: string };
+  classNames?: Partial<PhoneClassMap>;
 
   // 🧮 Formatting
   format?: 'INTERNATIONAL' | 'NATIONAL' | 'E164' | 'RFC3966';
@@ -114,11 +115,10 @@ export interface PhoneInputConfig {
   dropdownPosition?: 'auto' | 'top' | 'bottom';
 
   // 🆕 Patch behavior configuration
-  validateOnPatch?: boolean;           // Validate immediately when value is patched
-  markAsTouchedOnPatch?: boolean;      // Mark control as touched on patch
-  showErrorsOnPatch?: boolean;         // Show validation errors immediately on patch
-  formatOnPatch?: boolean;             // Apply formatting when patching (respects autoFormat)
-
+  validateOnPatch?: boolean; // Validate immediately when value is patched
+  markAsTouchedOnPatch?: boolean; // Mark control as touched on patch
+  showErrorsOnPatch?: boolean; // Show validation errors immediately on patch
+  formatOnPatch?: boolean; // Apply formatting when patching (respects autoFormat)
 
   // 🧠 Custom logic hooks
   customPlaceholder?: (country: Country) => string;
@@ -206,3 +206,25 @@ export type PhoneCustomValidator = (
   value: string,
   country?: Country
 ) => ValidationError | null;
+
+export interface PhoneClassMap {
+  container: string;
+  label: string;
+  inputGroup: string;
+  inputContainer: string;
+  phoneInput: string;
+  countryButton: string;
+  flagTrigger: string;
+  dropdown: string;
+  searchInput: string;
+  countryItem: string;
+  errorMessage: string;
+}
+
+export type NgClassValue =
+  | string
+  | string[]
+  | Set<string>
+  | { [klass: string]: any }
+  | null
+  | undefined;

@@ -1,12 +1,11 @@
 <div
-  class="ngx-phone-container"
-  [ngClass]="normalizedConfig.containerClass"
+  [ngClass]="getClass('container', normalizedConfig.containerClass)"
   [style]="getContainerStyles()"
 >
   <!-- 🏷️ Label (if enabled) -->
   <label
     *ngIf="normalizedConfig.showLabel && normalizedConfig.label"
-    [ngClass]="['phone-input-label', normalizedConfig.labelClass]"
+    [ngClass]="getClass('label', normalizedConfig.labelClass)"
     [class.floating]="normalizedConfig.labelPosition === 'floating'"
     [class.inline]="normalizedConfig.labelPosition === 'inline'"
     [for]="inputId"
@@ -18,7 +17,7 @@
   <div class="input-wrapper" #phoneWrapperRef>
     <!-- 📦 Input Group: Country Selector (optional) + Input -->
     <div
-      class="input-group"
+      [ngClass]="getClass('inputGroup')"
       [class.separate]="normalizedConfig.separateCountrySelector"
       [class.has-error]="hasError"
       [class.focused]="isFocused"
@@ -31,7 +30,7 @@
           normalizedConfig.countrySelectPosition === 'before'
         "
         class="country-selector-btn"
-        [ngClass]="normalizedConfig.buttonClass"
+        [ngClass]="getClass('countryButton', normalizedConfig.buttonClass)"
         type="button"
         [disabled]="disabled || normalizedConfig.lockCountrySelection"
         (click)="!normalizedConfig.lockCountrySelection && toggleDropdown()"
@@ -74,6 +73,7 @@
       <!-- Phone Input with Inline Flag -->
       <div
         class="input-container"
+        [ngClass]="getClass('inputContainer')"
         [class.has-error]="hasError"
         [class.custom-border]="normalizedConfig.customContainerBorder"
       >
@@ -82,7 +82,7 @@
           *ngIf="shouldShowInlineFlag()"
           type="button"
           class="flag-trigger"
-          [ngClass]="normalizedConfig.buttonClass"
+          [ngClass]="getClass('flagTrigger', normalizedConfig.buttonClass)"
           [class]="getFlagClasses()"
           [disabled]="disabled || normalizedConfig.lockCountrySelection"
           (click)="!normalizedConfig.lockCountrySelection && toggleDropdown()"
@@ -122,10 +122,12 @@
           [id]="inputId"
           type="tel"
           class="phone-input"
-          [ngClass]="[
-            normalizedConfig.inputClass,
-            normalizedConfig.placeholderClass
-          ]"
+          [ngClass]="
+            getClass('phoneInput', [
+              normalizedConfig.inputClass,
+              normalizedConfig.placeholderClass
+            ])
+          "
           [style]="getPlaceholderStyles()"
           [value]="phoneValue"
           (input)="onPhoneInput($any($event.target).value)"
@@ -150,7 +152,7 @@
           normalizedConfig.countrySelectPosition === 'after'
         "
         class="country-selector-btn"
-        [ngClass]="normalizedConfig.buttonClass"
+        [ngClass]="getClass('countryButton', normalizedConfig.buttonClass)"
         type="button"
         [disabled]="disabled || normalizedConfig.lockCountrySelection"
         (click)="!normalizedConfig.lockCountrySelection && toggleDropdown()"
@@ -195,8 +197,7 @@
     <div
       *ngIf="showDropdown"
       #dropdownRef
-      class="country-dropdown"
-      [ngClass]="getDropdownClasses()"
+      [ngClass]="getClass('dropdown', getDropdownClasses())"
       [style.max-height]="normalizedConfig.dropdownMaxHeight"
       [style.width]="normalizedConfig.dropdownWidth"
       [style]="getDropdownStyles()"
@@ -209,6 +210,7 @@
           #searchInput
           type="text"
           class="search-input"
+          [ngClass]="getClass('searchInput')"
           [value]="searchQuery"
           (input)="onSearchChange($any($event.target).value)"
           [placeholder]="normalizedConfig.searchPlaceholder"
@@ -222,7 +224,7 @@
           <div class="section-label">Suggested</div>
           <button
             *ngFor="let country of preferredCountriesList; trackBy: trackByIso"
-            class="country-item"
+            [ngClass]="getClass('countryItem')"
             [class.selected]="country.iso2 === selectedCountry?.iso2"
             (click)="selectCountryAndClose(country)"
             type="button"
@@ -243,6 +245,7 @@
         <button
           *ngFor="let country of filteredCountries; trackBy: trackByIso"
           class="country-item"
+          [ngClass]="getClass('countryItem')"
           [class.selected]="country.iso2 === selectedCountry?.iso2"
           (click)="selectCountryAndClose(country)"
           type="button"
@@ -268,7 +271,7 @@
   <!-- ❌ Validation Error -->
   <div
     *ngIf="normalizedConfig.showErrorMessages && shouldShowError()"
-    [ngClass]="['error-message', normalizedConfig.errorClass]"
+    [ngClass]="getClass('errorMessage', normalizedConfig.errorClass)"
     [id]="errorId"
     role="alert"
     [attr.aria-live]="'polite'"

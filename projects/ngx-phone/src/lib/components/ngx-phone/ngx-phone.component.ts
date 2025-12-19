@@ -31,6 +31,7 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 import {
   Country,
+  PhoneClassMap,
   PhoneCustomValidator,
   PhoneInputConfig,
   PhoneNumberValue,
@@ -1953,5 +1954,14 @@ export class NgxPhoneComponent
     );
 
     return hasAllowedCountryWithSameDialCode;
+  }
+
+  getClass(key: keyof PhoneClassMap, extra?: string | string[]): string[] {
+    const base = this.normalizedConfig.classNames?.[key];
+    const extras = Array.isArray(extra) ? extra : extra ? [extra] : [];
+
+    return [base, ...extras].filter(
+      (cls): cls is string => typeof cls === 'string' && cls.length > 0
+    );
   }
 }

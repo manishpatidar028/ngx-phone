@@ -7,9 +7,16 @@ import {
   AbstractControl,
   FormsModule,
   ReactiveFormsModule,
+  NgForm,
 } from '@angular/forms';
-import { NgForm } from '@angular/forms';
-import { Country, NgxPhoneModule, PhoneInputConfig, PhoneNumberValue, ValidationError, ValidationResult } from '../../../ngx-phone/src/public-api';
+import {
+  Country,
+  NgxPhoneModule,
+  PhoneInputConfig,
+  PhoneNumberValue,
+  ValidationError,
+  ValidationResult,
+} from '../../../ngx-phone/src/public-api';
 
 @Component({
   selector: 'demo-app',
@@ -60,7 +67,7 @@ export class DemoAppComponent implements OnInit {
     showInlineDivider: false,
     // Basic Settings
     defaultCountry: 'US',
-    onlyCountries:['US', 'IN'],
+    onlyCountries: ['US', 'IN'],
     autoFormat: true,
     showFlags: true,
     flagPosition: 'start',
@@ -118,6 +125,7 @@ export class DemoAppComponent implements OnInit {
       TOO_LONG: 'Phone number is too long',
       STARTS_WITH_ZERO: 'Phone cannot start with 0',
     },
+    emitOnChangeOnPatch: false,
   };
 
   templateConfig: PhoneInputConfig = {
@@ -263,16 +271,15 @@ export class DemoAppComponent implements OnInit {
   formValues: any = {};
   eventLog: string[] = [];
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private readonly fb: FormBuilder) {}
 
   ngOnInit(): void {
     this.initializeForms();
     setTimeout(() => {
       this.reactiveForm.patchValue({
         phoneReactive: '+1(801) 448-6702',
-      })
+      });
     }, 5000);
-    
   }
 
   private initializeForms(): void {
@@ -301,7 +308,7 @@ export class DemoAppComponent implements OnInit {
   // Custom validator function
   noStartWithZeroValidator = (
     value: string,
-    country?: Country
+    country?: Country,
   ): ValidationError | null => {
     if (!value) return null;
 
@@ -332,7 +339,7 @@ export class DemoAppComponent implements OnInit {
   // Event handlers
   onCountryChange(country: Country, formType: string): void {
     this.eventLog.unshift(
-      `[${formType}] Country changed to: ${country.name} (${country.iso2})`
+      `[${formType}] Country changed to: ${country.name} (${country.iso2})`,
     );
     this.limitEventLog();
   }
@@ -343,7 +350,7 @@ export class DemoAppComponent implements OnInit {
       this.eventLog.unshift(
         `[${formType}] Number: ${value.formatted || value.raw} (Valid: ${
           value.isValid
-        })`
+        })`,
       );
     } else {
       this.eventLog.unshift(`[${formType}] Number cleared`);

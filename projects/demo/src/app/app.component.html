@@ -26,12 +26,16 @@
       >
         Submit Reactive Form
       </button>
-      
+
       <div class="form-debug" *ngIf="reactiveForm.get('phoneReactive')">
         <small>
-          Value: {{ reactiveForm.get('phoneReactive')?.value || 'empty' }} |
-          Valid: {{ reactiveForm.get('phoneReactive')?.valid }} |
-          Errors: {{ reactiveForm.get('phoneReactive')?.errors | json }}
+          Status:
+          <strong [style.color]="reactiveForm.pristine ? 'green' : 'red'">{{
+            reactiveForm.pristine ? "PRISTINE" : "DIRTY"
+          }}</strong>
+          | Value: {{ reactiveForm.get("phoneReactive")?.value || "empty" }} |
+          Valid: {{ reactiveForm.get("phoneReactive")?.valid }} | Errors:
+          {{ reactiveForm.get("phoneReactive")?.errors | json }}
         </small>
       </div>
     </form>
@@ -56,18 +60,18 @@
         (enter)="onEnter('template')"
       ></ngx-phone>
 
-      <button 
-        type="submit" 
+      <button
+        type="submit"
         class="btn btn-primary"
         [disabled]="!templateForm.valid"
       >
         Submit Template Form
       </button>
-      
+
       <div class="form-debug">
         <small>
-          Value: {{ templateFormValue || 'empty' }} |
-          Valid: {{ templateForm.valid }}
+          Value: {{ templateFormValue || "empty" }} | Valid:
+          {{ templateForm.valid }}
         </small>
       </div>
     </form>
@@ -86,11 +90,11 @@
         [required]="true"
         (numberChange)="onNumberChange($event, 'inline')"
       ></ngx-phone>
-      
+
       <div class="form-debug">
         <small>
-          Value: {{ inlineForm.get('phoneInline')?.value || 'empty' }} |
-          Valid: {{ inlineForm.get('phoneInline')?.valid }}
+          Value: {{ inlineForm.get("phoneInline")?.value || "empty" }} | Valid:
+          {{ inlineForm.get("phoneInline")?.valid }}
         </small>
       </div>
     </form>
@@ -109,11 +113,11 @@
         (countryChange)="onCountryChange($event, 'separate')"
         (numberChange)="onNumberChange($event, 'separate')"
       ></ngx-phone>
-      
+
       <div class="form-debug">
         <small>
-          Value: {{ separateForm.get('phoneSeparate')?.value || 'empty' }} |
-          Valid: {{ separateForm.get('phoneSeparate')?.valid }}
+          Value: {{ separateForm.get("phoneSeparate")?.value || "empty" }} |
+          Valid: {{ separateForm.get("phoneSeparate")?.valid }}
         </small>
       </div>
     </form>
@@ -134,11 +138,11 @@
         (blur)="onMaterialBlur()"
         (numberChange)="onNumberChange($event, 'material')"
       ></ngx-phone>
-      
+
       <div class="form-debug">
         <small>
-          Value: {{ materialForm.get('phoneMaterial')?.value || 'empty' }} |
-          Valid: {{ materialForm.get('phoneMaterial')?.valid }}
+          Value: {{ materialForm.get("phoneMaterial")?.value || "empty" }} |
+          Valid: {{ materialForm.get("phoneMaterial")?.valid }}
         </small>
       </div>
     </form>
@@ -157,11 +161,11 @@
         (countryChange)="onCountryChange($event, 'dynamic')"
         (numberChange)="onNumberChange($event, 'dynamic')"
       ></ngx-phone>
-      
+
       <div class="form-debug">
         <small>
-          Value: {{ dynamicForm.get('phoneDynamic')?.value || 'empty' }} |
-          Valid: {{ dynamicForm.get('phoneDynamic')?.valid }}
+          Value: {{ dynamicForm.get("phoneDynamic")?.value || "empty" }} |
+          Valid: {{ dynamicForm.get("phoneDynamic")?.valid }}
         </small>
       </div>
     </form>
@@ -206,11 +210,14 @@
         </div>
       </div>
     </div>
-    
+
     <div class="event-log">
       <h4>Recent Events ({{ eventLog.length }})</h4>
       <ul>
-        <li *ngFor="let event of eventLog; let i = index" [class.recent]="i < 3">
+        <li
+          *ngFor="let event of eventLog; let i = index"
+          [class.recent]="i < 3"
+        >
           {{ event }}
         </li>
       </ul>

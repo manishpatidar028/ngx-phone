@@ -101,6 +101,7 @@ const DEFAULT_CONFIG: RequiredConfig = {
   validateOnPatch: true,
   formatOnPatch: true,
   markAsTouchedOnPatch: true,
+  emitOnChangeOnPatch: true,
   showErrorsOnPatch: true,
   classNames: DEFAULT_PHONE_CLASSES,
 };
@@ -117,7 +118,7 @@ export type NormalizedPhoneConfig = typeof DEFAULT_CONFIG & {
  * Normalize phone input configuration by merging with defaults
  */
 export function normalizePhoneConfig(
-  config: PhoneInputConfig
+  config: PhoneInputConfig,
 ): NormalizedPhoneConfig {
   const normalized = { ...DEFAULT_CONFIG, ...config };
 
@@ -151,7 +152,7 @@ export function normalizePhoneConfig(
     normalized.flagPosition === 'none'
   ) {
     console.warn(
-      'NgxPhone: separateCountrySelector is true but flagPosition is "none". Setting showFlags to false.'
+      'NgxPhone: separateCountrySelector is true but flagPosition is "none". Setting showFlags to false.',
     );
     normalized.showFlags = false;
   }
@@ -169,7 +170,7 @@ export function normalizePhoneConfig(
   // Validate dropdown position
   if (!['auto', 'top', 'bottom'].includes(normalized.dropdownPosition)) {
     console.warn(
-      `NgxPhone: Invalid dropdownPosition "${normalized.dropdownPosition}". Using "auto".`
+      `NgxPhone: Invalid dropdownPosition "${normalized.dropdownPosition}". Using "auto".`,
     );
     normalized.dropdownPosition = 'auto';
   }
@@ -177,7 +178,7 @@ export function normalizePhoneConfig(
   // Validate label position
   if (!['top', 'floating', 'inline'].includes(normalized.labelPosition)) {
     console.warn(
-      `NgxPhone: Invalid labelPosition "${normalized.labelPosition}". Using "top".`
+      `NgxPhone: Invalid labelPosition "${normalized.labelPosition}". Using "top".`,
     );
     normalized.labelPosition = 'top';
   }
@@ -185,11 +186,11 @@ export function normalizePhoneConfig(
   // Validate show errors on
   if (
     !['touched', 'dirty', 'always', 'blur', 'focus', 'live'].includes(
-      normalized.showErrorsOn
+      normalized.showErrorsOn,
     )
   ) {
     console.warn(
-      `NgxPhone: Invalid showErrorsOn "${normalized.showErrorsOn}". Using "dirty".`
+      `NgxPhone: Invalid showErrorsOn "${normalized.showErrorsOn}". Using "dirty".`,
     );
     normalized.showErrorsOn = 'dirty';
   }
@@ -211,32 +212,32 @@ export function validatePhoneConfig(config: PhoneInputConfig): string[] {
   if (config.onlyCountries && config.excludeCountries) {
     if (config.onlyCountries.length > 0 && config.excludeCountries.length > 0) {
       warnings.push(
-        'Both onlyCountries and excludeCountries are set. onlyCountries will take precedence.'
+        'Both onlyCountries and excludeCountries are set. onlyCountries will take precedence.',
       );
     }
   }
 
   if (config.lockCountrySelection && config.autoDetectCountry) {
     warnings.push(
-      'lockCountrySelection is true but autoDetectCountry is also true. Country detection will be disabled.'
+      'lockCountrySelection is true but autoDetectCountry is also true. Country detection will be disabled.',
     );
   }
 
   if (config.separateCountrySelector && config.flagPosition === 'none') {
     warnings.push(
-      'separateCountrySelector is true but flagPosition is "none". Consider setting showFlags to false.'
+      'separateCountrySelector is true but flagPosition is "none". Consider setting showFlags to false.',
     );
   }
 
   if (config.customContainerBorder && !config.containerBorderStyle) {
     warnings.push(
-      'customContainerBorder is true but containerBorderStyle is not provided.'
+      'customContainerBorder is true but containerBorderStyle is not provided.',
     );
   }
 
   if (config.customContainerBorder && !config.containerBorderStyle) {
     warnings.push(
-      'customContainerBorder is true but containerBorderStyle is not provided.'
+      'customContainerBorder is true but containerBorderStyle is not provided.',
     );
   }
 
@@ -252,7 +253,7 @@ export function validatePhoneConfig(config: PhoneInputConfig): string[] {
  */
 export function getEffectivePlaceholder(
   config: NormalizedPhoneConfig,
-  selectedCountry: any
+  selectedCountry: any,
 ): string {
   if (config.customPlaceholder && selectedCountry) {
     try {
@@ -260,7 +261,7 @@ export function getEffectivePlaceholder(
     } catch (error) {
       console.warn(
         'NgxPhone: Custom placeholder function threw an error:',
-        error
+        error,
       );
     }
   }
@@ -272,7 +273,7 @@ export function getEffectivePlaceholder(
  * Helper to determine if custom styles should be applied
  */
 export function shouldApplyCustomStyles(
-  config: NormalizedPhoneConfig
+  config: NormalizedPhoneConfig,
 ): boolean {
   return (
     config.customContainerBorder ||

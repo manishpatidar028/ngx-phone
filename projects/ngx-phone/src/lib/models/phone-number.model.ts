@@ -119,6 +119,7 @@ export interface PhoneInputConfig {
   markAsTouchedOnPatch?: boolean; // Mark control as touched on patch
   showErrorsOnPatch?: boolean; // Show validation errors immediately on patch
   formatOnPatch?: boolean; // Apply formatting when patching (respects autoFormat)
+  emitOnChangeOnPatch?: boolean; // Whether to trigger onChange when value is patched (marks form as dirty)
 
   // 🧠 Custom logic hooks
   customPlaceholder?: (country: Country) => string;
@@ -204,7 +205,7 @@ export interface FormatOptions {
 
 export type PhoneCustomValidator = (
   value: string,
-  country?: Country
+  country?: Country,
 ) => ValidationError | null;
 
 export interface PhoneClassMap {

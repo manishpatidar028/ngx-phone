@@ -5,7 +5,7 @@
   "author": "Manish Patidar",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --port 4201",
     "build": "ng build",
     "build-demo": "ng build demo",
     "watch": "ng build --watch --configuration development",

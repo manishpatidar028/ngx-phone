@@ -7,7 +7,6 @@ import {
   forwardRef,
   HostBinding,
   Input,
-  NgZone,
   OnChanges,
   OnDestroy,
   OnInit,
@@ -23,7 +22,6 @@ import {
   ValidationErrors,
   Validator,
   FormsModule,
-  Validators,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
@@ -232,13 +230,13 @@ export class NgxPhoneComponent
   // ===================================================================
 
   /** Cleanup stream for subscriptions */
-  private destroy$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
 
   /** Phone input debouncing stream */
-  private phoneInput$ = new Subject<string>();
+  private readonly phoneInput$ = new Subject<string>();
 
   /** Search input debouncing stream */
-  private searchInput$ = new Subject<string>();
+  private readonly searchInput$ = new Subject<string>();
 
   /** ControlValueAccessor callback functions */
   private onChange: (value: any) => void = () => {};
@@ -251,7 +249,7 @@ export class NgxPhoneComponent
   private hasShownError = false;
 
   /** Internal validation state */
-  private isValidating = false;
+  private readonly isValidating = false;
 
   /** Normalized configuration cache */
   private _normalized!: NormalizedPhoneConfig;
@@ -260,11 +258,11 @@ export class NgxPhoneComponent
   }
 
   constructor(
-    private countryService: CountryService,
-    private validationService: PhoneValidationService,
-    private cdr: ChangeDetectorRef,
-    private platformHelper: PlatformHelper,
-    private smartFlagService: SmartFlagService
+    private readonly countryService: CountryService,
+    private readonly validationService: PhoneValidationService,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly platformHelper: PlatformHelper,
+    private readonly smartFlagService: SmartFlagService,
   ) {}
 
   // ===================================================================
@@ -433,7 +431,7 @@ export class NgxPhoneComponent
     // Priority 1: External FormControl errors (required, minLength, etc.)
     const external = pickDynamicPhoneError(
       this.formControls?.errors ?? null,
-      this.normalizedConfig.errorMessages
+      this.normalizedConfig.errorMessages,
     );
     if (external) return external;
 
@@ -462,7 +460,7 @@ export class NgxPhoneComponent
     this.countries = this.countryService.filterCountries(only, exclude);
     this.filteredCountries = [...this.countries];
     this.preferredCountriesList = this.countryService.getPreferredCountries(
-      preferred as string[]
+      preferred as string[],
     );
   }
 
@@ -477,7 +475,7 @@ export class NgxPhoneComponent
 
     if (this.normalizedConfig.defaultCountry) {
       const country = this.countryService.getCountryByIso2(
-        this.normalizedConfig.defaultCountry
+        this.normalizedConfig.defaultCountry,
       );
       if (country) {
         this.selectCountry(
@@ -486,7 +484,7 @@ export class NgxPhoneComponent
             !this.normalizedConfig.separateCountrySelector,
           this.normalizedConfig.clearInputOnCountryChange &&
             !this.normalizedConfig.separateCountrySelector,
-          true // Mark as manual to prevent auto-detection override
+          true, // Mark as manual to prevent auto-detection override
         );
       }
     } else if (
@@ -503,7 +501,7 @@ export class NgxPhoneComponent
           country,
           false,
           this.normalizedConfig.clearInputOnCountryChange,
-          false
+          false,
         );
       }
     }
@@ -600,7 +598,7 @@ export class NgxPhoneComponent
 
         const formatted = this.validationService.formatAsYouType(
           toFormat,
-          this.selectedCountry.iso2
+          this.selectedCountry.iso2,
         );
 
         if (formatted && formatted !== this.phoneValue) {
@@ -663,7 +661,7 @@ export class NgxPhoneComponent
     if (detected) {
       const isCountryAllowed = this.isCountryAllowedWithDialCodeRelaxation(
         detected.iso2,
-        value
+        value,
       );
 
       if (!isCountryAllowed) {
@@ -712,7 +710,7 @@ export class NgxPhoneComponent
     country: Country,
     updateInput: boolean = true,
     clearInput: boolean = false,
-    isManual: boolean = false
+    isManual: boolean = false,
   ): void {
     const previousCountry = this.selectedCountry;
     this.selectedCountry = country;
@@ -739,12 +737,12 @@ export class NgxPhoneComponent
           ) {
             this.phoneValue = this.validationService.formatAsYouType(
               `${country.dialCode} ${nationalNumber}`,
-              country.iso2
+              country.iso2,
             );
           } else {
             const fullFormatted = this.validationService.formatAsYouType(
               `${country.dialCode} ${nationalNumber}`,
-              country.iso2
+              country.iso2,
             );
             this.phoneValue = fullFormatted
               .replace(country.dialCode, '')
@@ -757,7 +755,7 @@ export class NgxPhoneComponent
           ) {
             this.phoneValue = this.validationService.formatAsYouType(
               country.dialCode,
-              country.iso2
+              country.iso2,
             );
           } else {
             this.phoneValue = '';
@@ -795,7 +793,7 @@ export class NgxPhoneComponent
       this.selectedCountry?.iso2 ?? null,
       this.selectedCountry?.dialCode ?? null,
       (input: string, iso?: string) =>
-        this.validationService.parsePhoneNumber(input, iso || undefined)
+        this.validationService.parsePhoneNumber(input, iso || undefined),
     );
   }
 
@@ -808,7 +806,7 @@ export class NgxPhoneComponent
       this.selectedCountry?.dialCode,
       newCountry.dialCode,
       newCountry.iso2,
-      (input, iso) => this.validationService.formatAsYouType(input, iso)
+      (input, iso) => this.validationService.formatAsYouType(input, iso),
     );
   }
 
@@ -867,7 +865,7 @@ export class NgxPhoneComponent
       for (const validator of this.customValidators) {
         const customError = validator(
           this.phoneValue,
-          this.selectedCountry ?? undefined
+          this.selectedCountry ?? undefined,
         );
         if (customError) {
           this.validationResult = {
@@ -895,7 +893,7 @@ export class NgxPhoneComponent
       this.selectedCountry?.iso2,
       this.normalizedConfig.errorMessages,
       [],
-      onlyCountries // 🆕 NEW parameter
+      onlyCountries, // 🆕 NEW parameter
     );
 
     this.isValid = this.validationResult.isValid;
@@ -908,7 +906,7 @@ export class NgxPhoneComponent
         { style: this.normalizedConfig.format },
         this.selectedCountry?.iso2 ||
           this.normalizedConfig.defaultCountry ||
-          'US'
+          'US',
       );
 
       if (formatted !== this.phoneValue) {
@@ -926,22 +924,26 @@ export class NgxPhoneComponent
    * Emit current value to parent components and forms
    * Respects the configured valueMode for proper form integration
    */
-  private emitValue(): void {
+  private emitValue(emitOnChange: boolean = true): void {
     const isEmpty = !this.phoneValue || !this.phoneValue.trim();
 
     if (isEmpty) {
       this.phoneNumberValue = null;
-      this.onChange(this.normalizedConfig.valueMode === 'object' ? null : '');
+      if (emitOnChange) {
+        this.onChange(this.normalizedConfig.valueMode === 'object' ? null : '');
+      }
     } else {
       // Parse the phone number
       this.phoneNumberValue = this.validationService.parsePhoneNumber(
         this.phoneValue,
-        this.selectedCountry?.iso2
+        this.selectedCountry?.iso2,
       );
 
       // Emit value based on configured valueMode
-      const valueToEmit = this.getValueByMode();
-      this.onChange(valueToEmit);
+      if (emitOnChange) {
+        const valueToEmit = this.getValueByMode();
+        this.onChange(valueToEmit);
+      }
     }
 
     this.numberChange.emit(this.phoneNumberValue);
@@ -1047,7 +1049,7 @@ export class NgxPhoneComponent
         if (detectedCountry) {
           const isAllowed = this.isCountryAllowedWithDialCodeRelaxation(
             detectedCountry.iso2,
-            value
+            value,
           );
 
           if (
@@ -1064,7 +1066,7 @@ export class NgxPhoneComponent
               try {
                 const formatted = this.validationService.formatAsYouType(
                   value,
-                  detectedCountry.iso2
+                  detectedCountry.iso2,
                 );
                 if (formatted && formatted !== value) {
                   this.phoneValue = formatted;
@@ -1089,7 +1091,7 @@ export class NgxPhoneComponent
           const fullNumber = `${this.selectedCountry.dialCode} ${value}`;
           const formatted = this.validationService.formatAsYouType(
             fullNumber,
-            this.selectedCountry.iso2
+            this.selectedCountry.iso2,
           );
 
           if (formatted && formatted.includes(this.selectedCountry.dialCode)) {
@@ -1179,7 +1181,7 @@ export class NgxPhoneComponent
 
     // 🆕 CRITICAL: Update form control value with formatted value
     // This ensures the form control has the formatted value, not the raw input
-    this.emitValue();
+    this.emitValue(this.normalizedConfig.emitOnChangeOnPatch);
 
     // Validate if configured
     if (shouldValidateOnPatch(this.normalizedConfig)) {
@@ -1217,7 +1219,7 @@ export class NgxPhoneComponent
     // Step 2: If no country detected, use default country
     if (!detectedCountry && this.normalizedConfig.defaultCountry) {
       detectedCountry = this.countryService.getCountryByIso2(
-        this.normalizedConfig.defaultCountry
+        this.normalizedConfig.defaultCountry,
       );
     }
 
@@ -1237,7 +1239,7 @@ export class NgxPhoneComponent
     // Step 4: Build the complete phone number with dial code
     const completeNumber = this.buildCompletePhoneNumber(
       normalized,
-      detectedCountry
+      detectedCountry,
     );
 
     // Step 5: Format if enabled
@@ -1245,13 +1247,13 @@ export class NgxPhoneComponent
       try {
         const formatted = this.validationService.formatAsYouType(
           completeNumber,
-          this.selectedCountry.iso2
+          this.selectedCountry.iso2,
         );
 
         // Decide whether to show dial code based on config
         this.phoneValue = this.applyDialCodeDisplay(
           formatted,
-          this.selectedCountry.dialCode
+          this.selectedCountry.dialCode,
         );
       } catch {
         this.phoneValue = completeNumber;
@@ -1310,7 +1312,7 @@ export class NgxPhoneComponent
     if (detected) {
       // Verify it's a valid match by checking digit length expectations
       const digitsAfterDialCode = normalized.substring(
-        detected.dialCode.length - 1 // -1 because dialCode includes +
+        detected.dialCode.length - 1, // -1 because dialCode includes +
       );
 
       // If we have reasonable digits after dial code, it's likely correct
@@ -1344,7 +1346,7 @@ export class NgxPhoneComponent
    */
   private buildCompletePhoneNumber(
     normalized: string,
-    country: Country | undefined
+    country: Country | undefined,
   ): string {
     if (!country) {
       return normalized;
@@ -1373,7 +1375,7 @@ export class NgxPhoneComponent
    */
   private applyDialCodeDisplay(
     formattedNumber: string,
-    dialCode: string
+    dialCode: string,
   ): string {
     const shouldShowDialCode =
       this.normalizedConfig.showCountryCodeInInput ||
@@ -1439,17 +1441,17 @@ export class NgxPhoneComponent
       try {
         const completeNumber = this.buildCompletePhoneNumber(
           this.phoneValue,
-          this.selectedCountry
+          this.selectedCountry,
         );
 
         const formatted = this.validationService.formatAsYouType(
           completeNumber,
-          this.selectedCountry.iso2
+          this.selectedCountry.iso2,
         );
 
         this.phoneValue = this.applyDialCodeDisplay(
           formatted,
-          this.selectedCountry.dialCode
+          this.selectedCountry.dialCode,
         );
       } catch {
         // Keep original value on error
@@ -1574,7 +1576,7 @@ export class NgxPhoneComponent
       for (const validator of this.customValidators) {
         const customError = validator(
           phoneStringToValidate,
-          this.selectedCountry ?? undefined
+          this.selectedCountry ?? undefined,
         );
         if (customError) {
           return {
@@ -1596,7 +1598,7 @@ export class NgxPhoneComponent
       this.selectedCountry?.iso2,
       this.normalizedConfig.errorMessages,
       [],
-      onlyCountries
+      onlyCountries,
     );
 
     if (!result.isValid && result.error) {
@@ -1612,13 +1614,13 @@ export class NgxPhoneComponent
    * Format number using specified style
    */
   formatNumber(
-    style?: 'INTERNATIONAL' | 'NATIONAL' | 'E164' | 'RFC3966'
+    style?: 'INTERNATIONAL' | 'NATIONAL' | 'E164' | 'RFC3966',
   ): string {
     if (!this.phoneValue) return '';
     return this.validationService.format(
       this.phoneValue,
       { style: style || this.normalizedConfig.format },
-      this.selectedCountry?.iso2
+      this.selectedCountry?.iso2,
     );
   }
 
@@ -1722,7 +1724,7 @@ export class NgxPhoneComponent
       country,
       true,
       false,
-      true // Always mark dropdown selections as manual
+      true, // Always mark dropdown selections as manual
     );
 
     this.countryChange.emit(country);
@@ -1755,7 +1757,7 @@ export class NgxPhoneComponent
       this.actualDropdownPosition = computeDropdownPosition(
         wrapperRect,
         dropdownHeight,
-        window.innerHeight
+        window.innerHeight,
       );
     }
 
@@ -1837,7 +1839,7 @@ export class NgxPhoneComponent
 
     return pickDynamicPhoneError(
       controlErrors,
-      this.normalizedConfig.errorMessages
+      this.normalizedConfig.errorMessages,
     );
   }
 
@@ -1914,7 +1916,7 @@ export class NgxPhoneComponent
    */
   private isCountryAllowedWithDialCodeRelaxation(
     detectedCountryIso: string,
-    phoneNumber: string
+    phoneNumber: string,
   ): boolean {
     const onlyCountries = this.normalizedConfig.onlyCountries;
 
@@ -1942,7 +1944,7 @@ export class NgxPhoneComponent
     // Find all countries that share this dial code
     const countriesWithSameDialCode =
       this.countryService.getCountriesWithSameDialCode(
-        detectedCountry.dialCode
+        detectedCountry.dialCode,
       );
 
     // Check if ANY of these countries is in onlyCountries
@@ -1950,7 +1952,7 @@ export class NgxPhoneComponent
       (country) =>
         onlyCountries
           .map((c) => c.toUpperCase())
-          .includes(country.iso2.toUpperCase())
+          .includes(country.iso2.toUpperCase()),
     );
 
     return hasAllowedCountryWithSameDialCode;
@@ -1961,7 +1963,7 @@ export class NgxPhoneComponent
     const extras = Array.isArray(extra) ? extra : extra ? [extra] : [];
 
     return [base, ...extras].filter(
-      (cls): cls is string => typeof cls === 'string' && cls.length > 0
+      (cls): cls is string => typeof cls === 'string' && cls.length > 0,
     );
   }
 }

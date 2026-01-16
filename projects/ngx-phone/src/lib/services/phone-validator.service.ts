@@ -28,6 +28,8 @@ import { CountryService } from './country.service';
   providedIn: 'root',
 })
 export class PhoneValidationService {
+  private PHONE_ALLOWED_REGEX = /^[0-9+\-\s()]+$/;
+
   constructor(private countryService: CountryService) {}
 
   /**
@@ -35,7 +37,7 @@ export class PhoneValidationService {
    */
   parsePhoneNumber(
     phoneNumber: string,
-    countryCode?: string
+    countryCode?: string,
   ): PhoneNumberValue | null {
     if (!phoneNumber) {
       return null;
@@ -55,7 +57,7 @@ export class PhoneValidationService {
       }
 
       const country = this.countryService.getCountryByIso2(
-        parsed.country || ''
+        parsed.country || '',
       );
 
       return {
@@ -89,7 +91,7 @@ export class PhoneValidationService {
     countryCode?: string,
     customMessages?: Partial<Record<ValidationError['type'], string>>,
     customValidators?: PhoneCustomValidator[], // ✅ new param
-    onlyCountries?: string[]
+    onlyCountries?: string[],
   ): ValidationResult {
     if (
       !phoneNumber ||
@@ -106,7 +108,16 @@ export class PhoneValidationService {
     }
 
     const trimmed = phoneNumber.trim();
-
+    if (!/^[0-9+\-\s()]+$/.test(trimmed)) {
+      return {
+        isValid: false,
+        isPossible: false,
+        error: {
+          type: 'NOT_A_NUMBER',
+          message: this.getErrorMessage('NOT_A_NUMBER', customMessages),
+        },
+      };
+    }
     try {
       if (onlyCountries && onlyCountries.length > 0) {
         const hasInternationalPrefix = trimmed.startsWith('+');
@@ -126,7 +137,7 @@ export class PhoneValidationService {
             const isAllowed = this.isCountryAllowedWithDialCodeRelaxation(
               detectedIso,
               detectedCountry.dialCode,
-              onlyCountries
+              onlyCountries,
             );
 
             if (!isAllowed) {
@@ -137,7 +148,7 @@ export class PhoneValidationService {
                   type: 'COUNTRY_NOT_ALLOWED',
                   message: this.getErrorMessage(
                     'COUNTRY_NOT_ALLOWED',
-                    customMessages
+                    customMessages,
                   ),
                 },
               };
@@ -187,7 +198,7 @@ export class PhoneValidationService {
       if (customValidators && customValidators.length > 0) {
         for (const validator of customValidators) {
           const country = this.countryService.getCountryByIso2(
-            countryCode ?? ''
+            countryCode ?? '',
           );
           const error = validator(phoneNumber, country);
           if (error) {
@@ -244,7 +255,7 @@ export class PhoneValidationService {
   format(
     phoneNumber: string,
     options?: FormatOptions,
-    countryCode?: string
+    countryCode?: string,
   ): string {
     try {
       const parsed = countryCode
@@ -324,7 +335,7 @@ export class PhoneValidationService {
    */
   getExampleNumber(
     countryCode: string,
-    type: 'MOBILE' | 'FIXED_LINE' = 'MOBILE'
+    type: 'MOBILE' | 'FIXED_LINE' = 'MOBILE',
   ): string {
     try {
       if (!isSupportedCountry(countryCode as CountryCode)) {
@@ -452,7 +463,7 @@ export class PhoneValidationService {
    */
   getErrorMessage(
     type: ValidationError['type'],
-    customMessages?: Partial<Record<ValidationError['type'], string>>
+    customMessages?: Partial<Record<ValidationError['type'], string>>,
   ): string {
     const defaults: Record<ValidationError['type'], string> = {
       REQUIRED: 'Phone number is required.',
@@ -472,7 +483,7 @@ export class PhoneValidationService {
   private isCountryAllowedWithDialCodeRelaxation(
     detectedCountryIso: string,
     dialCode: string,
-    onlyCountries: string[]
+    onlyCountries: string[],
   ): boolean {
     // Direct match
     if (
@@ -491,7 +502,7 @@ export class PhoneValidationService {
     return countriesWithSameDialCode.some((country) =>
       onlyCountries
         .map((c) => c.toUpperCase())
-        .includes(country.iso2.toUpperCase())
+        .includes(country.iso2.toUpperCase()),
     );
   }
 }

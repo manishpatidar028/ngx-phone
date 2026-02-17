@@ -5,10 +5,10 @@
   "author": "Manish Patidar",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --port 4201",
+    "start": "ng serve --port 4202",
     "build": "ng build",
     "build-demo": "ng build demo",
-    "watch": "ng build --watch --configuration development",
+    "watch": "ng build ngx-phone --watch --configuration development",
     "test": "ng test"
   },
   "keywords": [
